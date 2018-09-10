@@ -36,7 +36,7 @@ endif
 
 stylecheck: $(TEST_PATH)/compile_commands.json
 	@echo -e "========================\nRunning style checker\n========================\n"
-	@clang-tidy -p=$(TEST_PATH) -quiet -checks=*,-google-build-using-namespace -export-fixes=test/error.yaml $(FILENAMES)
+	@clang-tidy -p=$(TEST_PATH) -quiet -checks=*,-google-build-using-namespace -export-fixes=test/style.yaml $(FILENAMES)
 	@echo -e "========================\nStyle checker complete\n========================\n"
 
 formatcheck:
@@ -48,7 +48,7 @@ ifndef HAS_CLANGFMT
 endif
 	@echo -e "========================\nRunning format checker\n========================\n"
 	@diff --suppress-common-lines --color=always -u1 <(cat $(FILENAMES)) <(clang-format $(FILENAMES)) || exit 0
-	@clang-format $(FILENAMES) -output-replacements-xml > format.xml
+	@clang-format $(FILENAMES) -output-replacements-xml > test/format.xml
 	@echo -e "========================\nFormat checking complete\n========================\n"
 
 all:	test stylecheck formatcheck
