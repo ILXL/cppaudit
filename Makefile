@@ -22,7 +22,7 @@ $(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cc
 
 test: /usr/lib/libgtest.a $(TEST_PATH)/unittest
 	@echo -e "\n========================\nRunning unit test\n========================\n"
-	@./$(TEST_PATH)/unittest --gtest_output="xml:unittest.xml"
+	@./$(TEST_PATH)/unittest --gtest_output="xml:test/unittest.xml"
 	@echo -e "\n========================\nUnit test complete\n========================\n"
 
 $(TEST_PATH)/compile_commands.json :
