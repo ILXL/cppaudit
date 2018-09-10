@@ -55,6 +55,6 @@ all:	test stylecheck formatcheck
 
 clean:
 	@rm -f $(TEST_PATH)/unittest.xml
-	@rm -f $(TEST_PATH)/error.yaml
+	@rm -f $(TEST_PATH)/style.yaml
 	@rm -f $(TEST_PATH)/format.xml
 	@rm -f $(TEST_PATH)/unittest
