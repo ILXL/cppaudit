@@ -22,7 +22,7 @@ $(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cc
 
 test: /usr/lib/libgtest.a $(TEST_PATH)/unittest
 	@echo -e "\n========================\nRunning unit test\n========================\n"
-	@./$(TEST_PATH)/unittest
+	@./$(TEST_PATH)/unittest --gtest_output="xml:unittest.xml"
 	@echo -e "\n========================\nUnit test complete\n========================\n"
 
 $(TEST_PATH)/compile_commands.json :
@@ -48,6 +48,7 @@ ifndef HAS_CLANGFMT
 endif
 	@echo -e "========================\nRunning format checker\n========================\n"
 	@diff --suppress-common-lines --color=always -u1 <(cat $(FILENAMES)) <(clang-format $(FILENAMES)) || exit 0
+	@clang-format $(FILENAMES) -output-replacements-xml > format.xml
 	@echo -e "========================\nFormat checking complete\n========================\n"
 
 all:	test stylecheck formatcheck
