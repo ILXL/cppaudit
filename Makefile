@@ -57,4 +57,5 @@ clean:
 	@rm -f $(TEST_PATH)/unittest.xml
 	@rm -f $(TEST_PATH)/style.yaml
 	@rm -f $(TEST_PATH)/format.xml
+	@rm -f $(TEST_PATH)/compile_commands.json
 	@rm -f $(TEST_PATH)/unittest
