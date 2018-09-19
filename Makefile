@@ -36,7 +36,7 @@ endif
 
 stylecheck: $(TEST_PATH)/compile_commands.json
 	@echo -e "========================\nRunning style checker\n========================\n"
-	@clang-tidy -p=$(TEST_PATH) -quiet -checks=*,-google-build-using-namespace -export-fixes=test/style.yaml $(FILENAMES)
+	@clang-tidy -p=$(TEST_PATH) -quiet -checks=*,-google-build-using-namespace,-fuchsia-default-arguments -export-fixes=test/style.yaml $(FILENAMES)
 	@echo -e "========================\nStyle checker complete\n========================\n"
 
 formatcheck:
