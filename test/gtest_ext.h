@@ -116,10 +116,10 @@ static void catch_alarm(int sig)
   if ( access( prog_name, F_OK ) == -1 ) { \
     GTEST_FATAL_FAILURE_("      cannot test '" prog_name "': no such file"); \
   } \
-  ASSERT_EQ(main_output(prog_name, input), output);
+  ASSERT_EQ(main_output(prog_name, input), output) << "   Input: " << input;
 
 #define ASSERT_MAIN_OUTPUT_THAT(prog_name, input, matcher) \
   if ( access( prog_name, F_OK ) == -1 ) { \
     GTEST_FATAL_FAILURE_("      cannot test '" prog_name "': no such file"); \
   } \
-  ASSERT_THAT(main_output(prog_name, input), matcher);
+  ASSERT_THAT(main_output(prog_name, input), matcher) << "   Input: " << input;
