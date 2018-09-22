@@ -16,7 +16,7 @@ HAS_CLANGFMT  := $(shell command -v clang-format 2> /dev/null)
 
 .PHONY: test stylecheck formatcheck all clean
 
-$(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cpp $(IMPLEMENTATIONS)
+$(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cpp $(IMPLEMS) $(HEADERS)
 	@g++ -std=c++17 $(IMPLEMS) $(TEST_PATH)/unittest.cpp -o $(TEST_PATH)/unittest -pthread -lgtest
 
 /usr/lib/libgtest.a:
