@@ -1,15 +1,23 @@
-TEST_PATH	:= test
-EXECFILE	:= restaurant
-FILENAMES 	:= restaurant.cc
-SHELL		:= /bin/bash
+# Directory containing test files
+TEST_PATH			:= test
+# Space-separated list of header files (e.g., algebra.hpp)
+HEADERS				:=
+# Space-separated list of implementation files (e.g., algebra.cpp)
+IMPLEMS				:=
+# File containing main
+DRIVER				:=
+# Expected name of executable file
+EXECFILE			:=
+FILES					:= $(DRIVER) $(IMPLEMS) $(HEADERS)
+SHELL					:= /bin/bash
 HAS_CLANGTDY	:= $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT	:= $(shell command -v clang-format 2> /dev/null)
 
 
 .PHONY: test stylecheck formatcheck all clean
 
-$(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cc
-	@g++ -std=c++17 $(TEST_PATH)/unittest.cc -o $(TEST_PATH)/unittest -pthread -lgtest
+$(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cpp $(IMPLEMENTATIONS)
+	@g++ -std=c++17 $(IMPLEMS) $(TEST_PATH)/unittest.cpp -o $(TEST_PATH)/unittest -pthread -lgtest
 
 /usr/lib/libgtest.a:
 	@echo -e "google test library not installed\n"
@@ -26,7 +34,7 @@ test: /usr/lib/libgtest.a $(TEST_PATH)/unittest
 	@echo -e "\n========================\nUnit test complete\n========================\n"
 
 $(TEST_PATH)/compile_commands.json :
-	@sh test/gen_ccjs.sh $(FILENAMES) $(EXECFILE)
+	@bash test/gen_ccjs.sh $(EXECFILE) $(DRIVER) "$(IMPLEMS)" "$(HEADERS)"
 ifndef HAS_CLANGTDY
 	@echo -e "clang-tidy not installed\n"
 	@echo -e "Installing clang-tidy. Please provide password when asked\n"
@@ -36,7 +44,7 @@ endif
 
 stylecheck: $(TEST_PATH)/compile_commands.json
 	@echo -e "========================\nRunning style checker\n========================\n"
-	@clang-tidy -p=$(TEST_PATH) -quiet -checks=*,-google-build-using-namespace,-fuchsia-default-arguments -export-fixes=test/style.yaml $(FILENAMES)
+	@clang-tidy -p=$(TEST_PATH) -quiet -checks=*,-google-build-using-namespace,-fuchsia-default-arguments,-llvm-header-guard -header-filter=.* -export-fixes=test/style.yaml $(IMPLEMS) $(HEADERS) $(DRIVER)
 	@echo -e "========================\nStyle checker complete\n========================\n"
 
 formatcheck:
@@ -46,9 +54,9 @@ ifndef HAS_CLANGFMT
 	@sudo apt-get -y install clang-format
 	@echo -e "Finished installing clang-format\n"
 endif
-	@echo -e "========================\nRunning format checker\n========================\n"
-	@diff --suppress-common-lines --color=always -u1 <(cat $(FILENAMES)) <(clang-format $(FILENAMES)) || exit 0
-	@clang-format $(FILENAMES) -output-replacements-xml > test/format.xml
+	@echo -e "========================\nRunning format checker\n========================"
+	@bash $(TEST_PATH)/diff_format.sh $(FILES)
+	@clang-format $(FILES) -output-replacements-xml > test/format.xml
 	@echo -e "========================\nFormat checking complete\n========================\n"
 
 all:	test stylecheck formatcheck
