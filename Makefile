@@ -1,17 +1,17 @@
 # Directory containing test files
-TEST_PATH			:= test
+TEST_PATH     := test
 # Space-separated list of header files (e.g., algebra.hpp)
-HEADERS				:=
+HEADERS       :=
 # Space-separated list of implementation files (e.g., algebra.cpp)
-IMPLEMS				:=
+IMPLEMS       :=
 # File containing main
-DRIVER				:=
+DRIVER        :=
 # Expected name of executable file
-EXECFILE			:=
-FILES					:= $(DRIVER) $(IMPLEMS) $(HEADERS)
-SHELL					:= /bin/bash
-HAS_CLANGTDY	:= $(shell command -v clang-tidy 2> /dev/null)
-HAS_CLANGFMT	:= $(shell command -v clang-format 2> /dev/null)
+EXECFILE      :=
+FILES         := $(DRIVER) $(IMPLEMS) $(HEADERS)
+SHELL         := /bin/bash
+HAS_CLANGTDY  := $(shell command -v clang-tidy 2> /dev/null)
+HAS_CLANGFMT  := $(shell command -v clang-format 2> /dev/null)
 
 
 .PHONY: test stylecheck formatcheck all clean
