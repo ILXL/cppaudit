@@ -112,14 +112,45 @@ static void catch_alarm(int sig)
 // @param prog_name name of the executable file
 // @param input     keyboard input sent to the program
 // @param output    expected output of the program
-#define ASSERT_MAIN_OUTPUT_EQ(prog_name, input, output) \
+#define ASSERT_MAIN_OUTPUT_EQ(prog_name, input, output) { \
   if ( access( prog_name, F_OK ) == -1 ) { \
     GTEST_FATAL_FAILURE_("      cannot test '" prog_name "': no such file"); \
   } \
-  ASSERT_EQ(main_output(prog_name, input), output) << "   Input: " << input;
+  ASSERT_EQ(main_output(prog_name, input), output) << "   Input: " << input; \
+}
 
-#define ASSERT_MAIN_OUTPUT_THAT(prog_name, input, matcher) \
+#define ASSERT_MAIN_OUTPUT_THAT(prog_name, input, matcher) {\
   if ( access( prog_name, F_OK ) == -1 ) { \
     GTEST_FATAL_FAILURE_("      cannot test '" prog_name "': no such file"); \
   } \
-  ASSERT_THAT(main_output(prog_name, input), matcher) << "   Input: " << input;
+  ASSERT_THAT(main_output(prog_name, input), matcher) << "   Input: " << input; \
+}
+
+// This macro asserts that the enclosed statements in the lambda function
+// is equal to the expected value in the standard output (cout)
+//
+// @param expected  expected string value
+// @param func      lambda function that is called
+#define ASSERT_STD_OUTPUT_EQ(expected, func) { \
+  std::stringstream ss; \
+  auto old_buf = std::cout.rdbuf(ss.rdbuf()); \
+  func(); \
+  std::cout.rdbuf(old_buf); \
+  std::string output = ss.str(); \
+  ASSERT_EQ(output, expected); \
+}
+
+// This macro asserts that the enclosed statements in the lambda function
+// produces values in the standard output (cout) that satisfies the given
+// string matcher
+//
+// @param expected  string matcher
+// @param func      lambda function that is called
+#define ASSERT_STD_OUTPUT_THAT(expected, func) { \
+  std::stringstream ss; \
+  auto old_buf = std::cout.rdbuf(ss.rdbuf()); \
+  func(); \
+  std::cout.rdbuf(old_buf); \
+  std::string output = ss.str(); \
+  ASSERT_THAT(output, expected); \
+}
