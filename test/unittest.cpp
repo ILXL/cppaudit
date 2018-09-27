@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "gtest_ext.h"
 using ::testing::HasSubstr;
 using ::testing::MatchesRegex;
 using ::testing::ContainsRegex;
