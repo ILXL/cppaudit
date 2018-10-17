@@ -12,9 +12,9 @@ FILES         := $(DRIVER) $(IMPLEMS) $(HEADERS)
 SHELL         := /bin/bash
 HAS_CLANGTDY  := $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  := $(shell command -v clang-format 2> /dev/null)
+COMPILE       := $(shell command g++ -std=c++17 )
 
-
-.PHONY: test stylecheck formatcheck all clean
+.PHONY: compile test stylecheck formatcheck grade gradeall all clean
 
 $(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cpp $(IMPLEMS) $(HEADERS)
 	@g++ -std=c++17 $(IMPLEMS) $(TEST_PATH)/unittest.cpp -o $(TEST_PATH)/unittest -pthread -lgtest
@@ -59,7 +59,17 @@ endif
 	@clang-format $(FILES) -output-replacements-xml > test/format.xml
 	@echo -e "========================\nFormat checking complete\n========================\n"
 
-all:	test stylecheck formatcheck
+grade:
+	@echo -e "========================\nRunning lab exercise grader\n========================\n"
+	@bash $(TEST_PATH)/grader.sh $(TEST_PATH)
+	@echo -e "\n========================\nLab exercise grader complete\n========================\n"
+
+gradeall:
+	@echo -e "========================\nRunning lab exercise grader\n========================\n"
+	@bash $(TEST_PATH)/grader-all.sh $(TEST_PATH)
+	@echo -e "\n========================\nLab exercise grader complete\n========================\n"
+
+all:	compile test stylecheck formatcheck grade gradeall
 
 clean:
 	@rm -f $(TEST_PATH)/unittest.xml
