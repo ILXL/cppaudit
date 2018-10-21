@@ -1,14 +1,13 @@
 // This file contains implementations that extend the functionality of the
 // google test framework
-// Version: 0.1-beta
+// Version: 0.1.1-beta
 
 #include <gtest/gtest.h>
-#include <unistd.h>
 #include <random>
-#include <setjmp.h>
-#include <signal.h>
 #include <string>
 #include <iomanip>
+#include <future>
+#include <chrono>
 
 // Run and retrieves the output of an executable program from
 // the command line.
@@ -74,19 +73,6 @@ std::string generate_string(int max_length){
   std::cout.rdbuf(old_output_buf); \
 }
 
-// variable used to store jump locations used in the
-// time-based assertion macros (ASSERT_TIME, ASSERT_TIMED_BLOCK_START,
-// ASSERT_TIMED_BLOCK_END)
-static jmp_buf jmp_env;
-
-// This function catches alarms from time-based assertion macros (ASSERT_TIME,
-// ASSERT_TIMED_BLOCK_START, ASSERT_TIMED_BLOCK_END)
-// @param sig signal number
-static void catch_alarm(int sig)
-{
-    longjmp(jmp_env, 1);
-}
-
 // This macro checks if the output of an executable program matches an expected
 // output.
 //
@@ -97,7 +83,7 @@ static void catch_alarm(int sig)
   if ( access( prog_name, F_OK ) == -1 ) { \
     GTEST_FATAL_FAILURE_("      cannot test '" prog_name "': no such file"); \
   } \
-  ASSERT_EQ(main_output(prog_name, input), output)"File saved successfully!\n\n" << "   Input: " << input; \
+  ASSERT_EQ(main_output(prog_name, input), output) << "File saved successfully!\n\n" << "   Input: " << input; \
 }
 
 // Version of ASSERT_EXECIO_EQ that uses google mock's matchers
@@ -139,7 +125,7 @@ static void catch_alarm(int sig)
   auto old_outputbuf = std::cout.rdbuf(output_ss.rdbuf()); \
   input_ss.str(input); \
   stmt; \
-  std::cin.rdbuf(old_inputbuf) \
+  std::cin.rdbuf(old_inputbuf); \
   std::cout.rdbuf(old_outputbuf); \
   std::string output = ss.str(); \
   ASSERT_THAT(output, expected); \
@@ -147,29 +133,25 @@ static void catch_alarm(int sig)
 
 // This macro checks whether a function executes within a given time
 //
-// setjmp is used to mark the line where longjmp from catch_alarm
-// will move to when the function call times out.
+// A thread is created to run the statement and update the status of a promise
+// object. A future object is created from the promise object to check whether
+// the promise  object's value was updated within the specified duration. If the
+// promise's value is not changed in time, the function is considered to have
+// timed out.
 //
-// When val is 0, the signal is initialized and the alarm timer is started.
-// The alarm is cancelled if it finishes executing the function before the
-// alarm goes off.
+// Code based on: http://antonlipov.blogspot.com/2015/08/how-to-timeout-tests-in-gtest.html
 //
-// If the alarm goes off, the handler catches the alarm and jumps to the line
-// that will then set val to 1. This results in a test failure that assigns
-// the appropriate error message.
-//
-// @param usecs microseconds to wait before statement is considered to have
+// @param secs  seconds to wait before statement is considered to have
 //              timed out
 // @param stmt  statement to be tested
-#define ASSERT_DURATION_LE(usecs, stmt) { \
-  const auto val = setjmp(jmp_env); \
-  if (val == 0) { \
-    signal(SIGALRM, catch_alarm); \
-    ualarm((usecs), 0); \
+#define ASSERT_DURATION_LE(secs, stmt) { \
+  std::promise<bool> completed; \
+  auto stmt_future = completed.get_future(); \
+  std::thread([&](std::promise<bool>& completed) { \
     stmt; \
-    ualarm(0, 0); \
-  } else { \
-    GTEST_FATAL_FAILURE_("       timed out (> " #usecs \
-    " microseconds). Check code for infinite loops"); \
-  } \
+    completed.set_value(true); \
+  }, std::ref(completed)).detach(); \
+  if(stmt_future.wait_for(std::chrono::seconds(secs)) == std::future_status::timeout) \
+    GTEST_FATAL_FAILURE_("       timed out (> " #secs \
+    " seconds). Check code for infinite loops"); \
 }
