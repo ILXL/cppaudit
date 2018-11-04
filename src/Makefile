@@ -12,6 +12,7 @@ FILES         := $(DRIVER) $(IMPLEMS) $(HEADERS)
 SHELL         := /bin/bash
 HAS_CLANGTDY  := $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  := $(shell command -v clang-format 2> /dev/null)
+CLANGTDY_CHKS := *,-google-build-using-namespace,-fuchsia-default-arguments,-llvm-header-guard
 
 
 .PHONY: test stylecheck formatcheck all clean
@@ -44,7 +45,7 @@ endif
 
 stylecheck: $(TEST_PATH)/compile_commands.json
 	@echo -e "========================\nRunning style checker\n========================\n"
-	@clang-tidy -p=$(TEST_PATH) -quiet -checks=*,-google-build-using-namespace,-fuchsia-default-arguments,-llvm-header-guard -header-filter=.* -export-fixes=test/style.yaml $(IMPLEMS) $(HEADERS) $(DRIVER)
+	@clang-tidy -p=$(TEST_PATH) -quiet -checks=$(CLANGTDY_CHKS) -header-filter=.* -export-fixes=test/style.yaml $(IMPLEMS) $(HEADERS) $(DRIVER)
 	@echo -e "========================\nStyle checker complete\n========================\n"
 
 formatcheck:
