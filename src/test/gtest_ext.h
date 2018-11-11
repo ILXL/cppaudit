@@ -127,7 +127,7 @@ std::string generate_string(int max_length){
   stmt; \
   std::cin.rdbuf(old_inputbuf); \
   std::cout.rdbuf(old_outputbuf); \
-  std::string output = ss.str(); \
+  std::string output = output_ss.str(); \
   ASSERT_THAT(output, expected); \
 }
 
