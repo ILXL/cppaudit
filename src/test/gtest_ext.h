@@ -83,7 +83,7 @@ std::string generate_string(int max_length){
   if ( access( prog_name, F_OK ) == -1 ) { \
     GTEST_FATAL_FAILURE_("      cannot test '" prog_name "': no such file"); \
   } \
-  ASSERT_EQ(main_output(prog_name, input), output) << "File saved successfully!\n\n" << "   Input: " << input; \
+  ASSERT_EQ(main_output(prog_name, input), output) << "   Input: " << input;
 }
 
 // Version of ASSERT_EXECIO_EQ that uses google mock's matchers
