@@ -83,7 +83,7 @@ std::string generate_string(int max_length){
   if ( access( prog_name, F_OK ) == -1 ) { \
     GTEST_FATAL_FAILURE_("      cannot test '" prog_name "': no such file"); \
   } \
-  ASSERT_EQ(main_output(prog_name, input), output) << "   Input: " << input;
+  ASSERT_EQ(main_output(prog_name, input), output) << "   Input: " << input; \
 }
 
 // Version of ASSERT_EXECIO_EQ that uses google mock's matchers
@@ -152,6 +152,8 @@ std::string generate_string(int max_length){
     completed.set_value(true); \
   }, std::ref(completed)).detach(); \
   if(stmt_future.wait_for(std::chrono::seconds(secs)) == std::future_status::timeout) \
-    GTEST_FATAL_FAILURE_("       timed out (> " #secs \
-    " seconds). Check code for infinite loops"); \
+    if (!::testing::Test::HasFatalFailure()) { \
+      GTEST_FATAL_FAILURE_("       timed out (> " #secs \
+      " seconds). Check code for infinite loops"); \
+    } \
 }
