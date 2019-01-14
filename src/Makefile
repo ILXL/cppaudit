@@ -17,7 +17,7 @@ CLANGTDY_CHKS := *,-google-build-using-namespace,-fuchsia-default-arguments,-llv
 
 .PHONY: test stylecheck formatcheck all clean
 
-$(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cpp $(IMPLEMS) $(HEADERS)
+$(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cpp $(DRIVER) $(IMPLEMS) $(HEADERS)
 	@g++ -std=c++17 $(IMPLEMS) $(TEST_PATH)/unittest.cpp -o $(TEST_PATH)/unittest -pthread -lgtest
 
 /usr/lib/libgtest.a:
