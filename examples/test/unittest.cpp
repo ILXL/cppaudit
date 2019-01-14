@@ -10,7 +10,9 @@ using ::testing::ContainsRegex;
 
 TEST(CashBack, OutputFormat)
 {
-   ASSERT_MAIN_OUTPUT_EQ("restaurant", "", "Restaurant: 27\n");
+  ASSERT_DURATION_LE(3, {
+    ASSERT_EXECIO_EQ("restaurant", "", "Restaurant: 27\n");
+  });
 }
 
 TEST(CashBack, FuncTest)
