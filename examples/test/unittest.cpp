@@ -4,9 +4,6 @@
 #include <cmath>
 #include "gtest_ext.h"
 #include "../algebra.hpp"
-using ::testing::HasSubstr;
-using ::testing::MatchesRegex;
-using ::testing::ContainsRegex;
 
 TEST(CashBack, OutputFormat)
 {
