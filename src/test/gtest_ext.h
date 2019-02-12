@@ -156,4 +156,5 @@ std::string generate_string(int max_length){
       GTEST_FATAL_FAILURE_("       timed out (> " #secs \
       " seconds). Check code for infinite loops"); \
     } \
+    if (::testing::Test::HasFatalFailure()) FAIL(); \
 }
