@@ -111,8 +111,8 @@ std::string generate_string(int max_length){
   stmt; \
   std::cin.rdbuf(old_inputbuf); \
   std::cout.rdbuf(old_outputbuf); \
-  std::string output = output_ss.str(); \
-  ASSERT_EQ(output, expected); \
+  std::string your_output = output_ss.str(); \
+  ASSERT_EQ(your_output, expected); \
 }
 
 // Version of ASSERT_SIO_EQ that uses google mock's matchers
@@ -127,8 +127,8 @@ std::string generate_string(int max_length){
   stmt; \
   std::cin.rdbuf(old_inputbuf); \
   std::cout.rdbuf(old_outputbuf); \
-  std::string output = output_ss.str(); \
-  ASSERT_THAT(output, expected); \
+  std::string your_output = output_ss.str(); \
+  ASSERT_THAT(your_output, expected); \
 }
 
 // This macro checks whether a function executes within a given time
