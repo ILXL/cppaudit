@@ -12,24 +12,22 @@ FILES         := $(DRIVER) $(IMPLEMS) $(HEADERS)
 SHELL         := /bin/bash
 HAS_CLANGTDY  := $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  := $(shell command -v clang-format 2> /dev/null)
+HAS_GTEST     := $(shell dpkg-query -L libgtest-dev | grep /usr/src/gtest)
 CLANGTDY_CHKS := *,-google-build-using-namespace,-fuchsia-default-arguments,-llvm-header-guard
 
 
 .PHONY: test stylecheck formatcheck all clean
 
 $(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cpp $(DRIVER) $(IMPLEMS) $(HEADERS)
+ifndef HAS_GTEST
+	@echo -e "libgtest-dev not installed\n"
+	@echo -e "Installing libgtest-dev. Please provide password when asked\n"
+	@sudo apt-get -y install libgtest-dev
+	@echo -e "Finished installing libgtest-dev\n"
+endif
 	@clang++ -std=c++17 $(IMPLEMS) $(TEST_PATH)/unittest.cpp -o $(TEST_PATH)/unittest -pthread -lgtest
 
-/usr/lib/libgtest.a:
-	@echo -e "google test library not installed\n"
-	@echo -e "Installing libgtest-dev. Please provide the password when asked\n"
-	@sudo apt-get -y install libgtest-dev cmake
-	@sudo apt-get install cmake # install cmake
-	@echo -e "\nConfiguring libgtest-dev\n"
-	@cd /usr/src/gtest; sudo cmake CMakeLists.txt; sudo make; sudo cp *.a /usr/lib
-	@echo -e "Finished installing google test library\n"
-
-test: /usr/lib/libgtest.a $(TEST_PATH)/unittest
+test: $(TEST_PATH)/unittest
 	@echo -e "\n========================\nRunning unit test\n========================\n"
 	@./$(TEST_PATH)/unittest --gtest_output="xml:test/unittest.xml"
 	@echo -e "\n========================\nUnit test complete\n========================\n"
