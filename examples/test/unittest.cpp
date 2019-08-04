@@ -3,6 +3,10 @@
 #include "gtest_ext.h"
 
 // Place unit tests here
+TEST(SUITE1, STDOUT) {
+	ASSERT_EXECIO_EQ("restaurant", "", "yo");
+}
+
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

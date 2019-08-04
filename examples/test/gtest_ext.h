@@ -73,6 +73,17 @@ std::string generate_string(int max_length){
   std::cout.rdbuf(old_output_buf); \
 }
 
+::testing::AssertionResult AssertStdOut(const char* expected_output_expr,
+                                        const char* prog_output_expr,
+                                        const char* prog_input_expr,
+                                        std::string expected_output, 
+                                        std::string prog_output,
+                                        std::string prog_input) {
+  if (expected_output == prog_output) return ::testing::AssertionSuccess();
+
+  return ::testing::AssertionFailure() << expected_output << "\n" << prog_output << "\n" << prog_input;
+}
+
 // This macro checks if the output of an executable program matches an expected
 // output.
 //
@@ -81,9 +92,10 @@ std::string generate_string(int max_length){
 // @param output    expected output of the program
 #define ASSERT_EXECIO_EQ(prog_name, input, output) { \
   if ( access( prog_name, F_OK ) == -1 ) { \
-    GTEST_FATAL_FAILURE_("      cannot test '" prog_name "': no such file"); \
-  } \
-  ASSERT_EQ(main_output(prog_name, input), output) << "   Input: " << input; \
+    FAIL() << "      cannot test '" prog_name "': Make sure your executable file is called '" prog_name "'"; \
+  } else {\
+    EXPECT_PRED_FORMAT3(AssertStdOut, main_output(prog_name, input), output, input); \
+  }\
 }
 
 // Version of ASSERT_EXECIO_EQ that uses google mock's matchers
