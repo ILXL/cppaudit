@@ -1,23 +1,14 @@
-# Directory containing test files
-TEST_PATH     := test
-# Space-separated list of header files (e.g., algebra.hpp)
-HEADERS       := algebra.hpp
-# Space-separated list of implementation files (e.g., algebra.cpp)
-IMPLEMS       := algebra.cpp
-# File containing main
-DRIVER        := restaurant.cpp
-# Expected name of executable file
-EXECFILE      := restaurant
+include config.mk
+
 FILES         := $(DRIVER) $(IMPLEMS) $(HEADERS)
 SHELL         := /bin/bash
 HAS_CLANGTDY  := $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  := $(shell command -v clang-format 2> /dev/null)
-CLANGTDY_CHKS := *,-google-build-using-namespace,-fuchsia-default-arguments,-llvm-header-guard
 
 
 .PHONY: test stylecheck formatcheck all clean
 
-$(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cpp $(IMPLEMS) $(HEADERS)
+$(TEST_PATH)/unittest: $(TEST_PATH)/unittest.cpp $(DRIVER) $(IMPLEMS) $(HEADERS)
 	@clang++ -std=c++17 $(IMPLEMS) $(TEST_PATH)/unittest.cpp -o $(TEST_PATH)/unittest -pthread -lgtest
 
 /usr/lib/libgtest.a:
