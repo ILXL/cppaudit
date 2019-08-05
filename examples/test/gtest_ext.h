@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <future>
 #include <chrono>
+#include "termcolor/termcolor.hpp"
 
 // Run and retrieves the output of an executable program from
 // the command line.
@@ -16,7 +17,7 @@
 // @param input     keyboard input sent to the program
 //
 // @return output of the program
-std::string main_output(std::string prog_name, std::string input)
+std::string exec_program(std::string prog_name, std::string input)
 {
   FILE *fp = popen(("echo \""+ input +"\" | ./" + prog_name).c_str(), "r");
   char buf[1024];
@@ -73,15 +74,70 @@ std::string generate_string(int max_length){
   std::cout.rdbuf(old_output_buf); \
 }
 
-::testing::AssertionResult AssertStdOut(const char* expected_output_expr,
-                                        const char* prog_output_expr,
+::testing::AssertionResult AssertExecStdOut(const char* prog_name_expr,
                                         const char* prog_input_expr,
-                                        std::string expected_output, 
-                                        std::string prog_output,
-                                        std::string prog_input) {
-  if (expected_output == prog_output) return ::testing::AssertionSuccess();
+                                        const char* prog_output_expr,
+                                        std::string prog_name, 
+                                        std::string prog_input,
+                                        std::string prog_output) {
+  if ( access( prog_name.c_str(), F_OK ) == -1 ) {
+    return ::testing::AssertionFailure() << "      cannot test '" << prog_name 
+                                         << "': Make sure your executable file"
+                                         << " is called '" << prog_name << "'";
+  }
+  std::string exec_output = exec_program(prog_name, prog_input);
+  if (exec_output == prog_output) {
+    return ::testing::AssertionSuccess();
+  } else {
+    int pos = 0;
+    int line_pos = 0;
+    int char_pos = 0;
+    std::string exec_diff = "";
+    std::string prog_diff = "";
+    bool found_diff = false;
+    for(; pos < exec_output.length(); pos++) {
+      if (exec_output[pos] == '\n') {
+        line_pos++;
+        char_pos = 0;
+      }
+      char_pos++;      
+      exec_diff = exec_output[pos];
+      if (pos >= prog_output.length()) {
+        break;
+      } else if(prog_output[pos] != exec_output[pos]) {
+        prog_diff = prog_output[pos];
+        found_diff = true;
+        break;
+      } 
+    }
+    if(!found_diff && pos < prog_output.length()) {
+      exec_diff = "";
+      prog_diff = prog_output[pos];
+    }
+    exec_diff = exec_diff == "\n" ? R"(\n)" : exec_diff;
+    prog_diff = prog_diff == "\n" ? R"(\n)" : prog_diff;
 
-  return ::testing::AssertionFailure() << expected_output << "\n" << prog_output << "\n" << prog_input;
+    std::ostringstream error_str_stream;
+    std::ostringstream expected_str_stream;
+    expected_str_stream << termcolor::colorize << termcolor::green << exec_output.substr(0, pos)
+                        << termcolor::red << exec_output.substr(pos)
+                        << termcolor::reset;
+    std::ostringstream program_str_stream;
+    program_str_stream << termcolor::colorize << termcolor::green << prog_output.substr(0, pos)
+                       << termcolor::red << prog_output.substr(pos)
+                       << termcolor::reset;
+    error_str_stream << "Your program's output did not match the expected "
+                     << "output starting on line " << line_pos + 1 
+                     << " character " << char_pos 
+                     << ".\nExpected " << prog_diff
+                     << " instead of " << exec_diff
+                     << "\n\nExpected output: \n" << expected_str_stream.str() 
+                     << "\n\nYour program's output: \n" 
+                     << program_str_stream.str() << "\n\nTest Input: \n" 
+                     << prog_input ;
+    
+    return ::testing::AssertionFailure() << error_str_stream.str();
+  }
 }
 
 // This macro checks if the output of an executable program matches an expected
@@ -90,13 +146,8 @@ std::string generate_string(int max_length){
 // @param prog_name name of the executable file
 // @param input     keyboard input sent to the program
 // @param output    expected output of the program
-#define ASSERT_EXECIO_EQ(prog_name, input, output) { \
-  if ( access( prog_name, F_OK ) == -1 ) { \
-    FAIL() << "      cannot test '" prog_name "': Make sure your executable file is called '" prog_name "'"; \
-  } else {\
-    EXPECT_PRED_FORMAT3(AssertStdOut, main_output(prog_name, input), output, input); \
-  }\
-}
+#define ASSERT_EXECEQ(prog_name, input, output) \
+    EXPECT_PRED_FORMAT3(AssertExecStdOut, prog_name, input, output)
 
 // Version of ASSERT_EXECIO_EQ that uses google mock's matchers
 //

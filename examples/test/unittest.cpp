@@ -4,7 +4,7 @@
 
 // Place unit tests here
 TEST(SUITE1, STDOUT) {
-	ASSERT_EXECIO_EQ("restaurant", "", "yo");
+	ASSERT_EXECEQ("restaurant", "", "Restawrant");
 }
 
 
