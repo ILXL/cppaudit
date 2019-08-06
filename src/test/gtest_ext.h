@@ -11,6 +11,28 @@
 #include <map>
 #include "termcolor/termcolor.hpp"
 
+class FailureListener : public ::testing::EmptyTestEventListener
+{
+  private:
+    size_t fatal_failures{0};
+    // Fired before each individual test starts: before the test fixture is constructed
+    // and SetUp() is invoked.
+    void OnTestStart(const ::testing::TestInfo& info) override
+    {
+      if (fatal_failures > 0) {
+         //FAIL() << "dun";
+         GTEST_SKIP() << "Test skipped until other errors are fixed";
+      }
+    }
+
+    void OnTestPartResult(const ::testing::TestPartResult& result) override {
+      if(result.failed()) {
+        fatal_failures++;
+      }
+    }    
+
+};
+
 // Run and retrieves the output of an executable program from
 // the command line.
 //

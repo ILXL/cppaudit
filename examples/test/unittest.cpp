@@ -5,6 +5,7 @@
 // Place unit tests here
 TEST(ExecutableOutput, Equal) {
 	ASSERT_EXECEQ("restaurant", "", "Restaurant: 27\n");
+	//ASSERT_EQ(1,1);
 }
 
 TEST(ExecutableOutput, Forcefail_expected_missing_Chars) {
@@ -16,6 +17,7 @@ TEST(ExecutableOutput, Forcefail_program_missing_Chars) {
 }
 
 int main(int argc, char **argv) {
-    testing::InitGoogleTest(&argc, argv);
+    testing::InitGoogleTest(&argc, argv);    
+    ::testing::UnitTest::GetInstance()->listeners().Append(new FailureListener());
     return RUN_ALL_TESTS();
 }
