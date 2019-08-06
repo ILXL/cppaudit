@@ -8,6 +8,30 @@
 #include <iomanip>
 #include <future>
 #include <chrono>
+#include <map>
+#include "termcolor/termcolor.hpp"
+
+class SkipListener : public ::testing::EmptyTestEventListener
+{
+  private:
+    size_t fatal_failures{0};
+    // Fired before each individual test starts: before the test fixture is constructed
+    // and SetUp() is invoked.
+    void OnTestStart(const ::testing::TestInfo& info) override
+    {
+      if (fatal_failures > 0) {
+         //FAIL() << "dun";
+         GTEST_SKIP() << "Test skipped until other errors are fixed";
+      }
+    }
+
+    void OnTestPartResult(const ::testing::TestPartResult& result) override {
+      if(result.failed()) {
+        fatal_failures++;
+      }
+    }    
+
+};
 
 // Run and retrieves the output of an executable program from
 // the command line.
@@ -16,7 +40,7 @@
 // @param input     keyboard input sent to the program
 //
 // @return output of the program
-std::string main_output(std::string prog_name, std::string input)
+std::string exec_program(std::string prog_name, std::string input)
 {
   FILE *fp = popen(("echo \""+ input +"\" | ./" + prog_name).c_str(), "r");
   char buf[1024];
@@ -59,6 +83,25 @@ std::string generate_string(int max_length){
   return ret;
 }
 
+std::string expose_special_characters(const std::string &source) {
+  if(source.length() == 0) {
+    return "<empty>";
+  }
+  std::map<char, std::string> replacement_map {
+    {' ', "<space>"},
+    {'\n', "\\n\n"}
+  };
+  std::stringstream exposed_string;
+  for(int i = 0; i < source.length(); i++) {
+    if(replacement_map.find(source[i]) != replacement_map.end()) {   
+      exposed_string << replacement_map[source[i]];
+    } else {
+      exposed_string << source[i];
+    }
+  }
+  return exposed_string.str();
+}
+
 // This macro is used to simulate the standard input (cin) for a code block
 //
 // @param input       simulated input
@@ -73,15 +116,74 @@ std::string generate_string(int max_length){
   std::cout.rdbuf(old_output_buf); \
 }
 
-::testing::AssertionResult AssertStdOut(const char* expected_output_expr,
-                                        const char* prog_output_expr,
+::testing::AssertionResult AssertExecStdOut(const char* prog_name_expr,
                                         const char* prog_input_expr,
-                                        std::string expected_output, 
-                                        std::string prog_output,
-                                        std::string prog_input) {
-  if (expected_output == prog_output) return ::testing::AssertionSuccess();
+                                        const char* prog_output_expr,
+                                        std::string prog_name, 
+                                        std::string prog_input,
+                                        std::string prog_output) {
+  if ( access( prog_name.c_str(), F_OK ) == -1 ) {
+    return ::testing::AssertionFailure() << "      cannot test '" << prog_name 
+                                         << "': Make sure your executable file"
+                                         << " is called '" << prog_name << "'";
+  }
+  std::string exec_output = exec_program(prog_name, prog_input);
+  if (exec_output == prog_output) {
+    return ::testing::AssertionSuccess();
+  } else {
+    int pos = 0;
+    int line_pos = 0;
+    int char_pos = 0;
+    std::string exec_diff = "";
+    std::string prog_diff = "";
+    bool found_diff = false;
+    for(; pos < exec_output.length(); pos++) {
+      if (exec_output[pos] == '\n') {
+        line_pos++;
+        char_pos = 0;
+      }
+      char_pos++;      
+      exec_diff = exec_output[pos];
+      if (pos >= prog_output.length()) {
+        break;
+      } else if(prog_output[pos] != exec_output[pos]) {
+        prog_diff = prog_output[pos];
+        found_diff = true;
+        break;
+      } 
+    }
+    if(!found_diff && pos < prog_output.length()) {
+      exec_diff = "";
+      prog_diff = prog_output[pos];
+    }
+    exec_diff = expose_special_characters(exec_diff);
+    prog_diff = expose_special_characters(prog_diff);
 
-  return ::testing::AssertionFailure() << expected_output << "\n" << prog_output << "\n" << prog_input;
+    std::ostringstream error_str_stream;
+    std::ostringstream exec_str_stream;
+    exec_str_stream << termcolor::colorize << termcolor::green 
+                    << exec_output.substr(0, pos)
+                    << termcolor::red << exec_output.substr(pos)
+                    << termcolor::reset;
+
+    std::ostringstream prog_str_stream;
+    prog_str_stream << termcolor::colorize << termcolor::green 
+                    << prog_output.substr(0, pos)
+                    << termcolor::red << prog_output.substr(pos)
+                    << termcolor::reset;
+
+    error_str_stream << "Your program's output did not match the expected "
+                     << "output starting on line " << line_pos + 1 
+                     << " character " << char_pos 
+                     << ".\nExpected " << prog_diff
+                     << " instead of " << exec_diff
+                     << "\n\nExpected output: \n" << expose_special_characters(prog_str_stream.str()) 
+                     << "\n\nYour program's output: \n" 
+                     << expose_special_characters(exec_str_stream.str()) << "\n\nTest Input: \n" 
+                     << prog_input ;
+    
+    return ::testing::AssertionFailure() << error_str_stream.str();
+  }
 }
 
 // This macro checks if the output of an executable program matches an expected
@@ -90,13 +192,8 @@ std::string generate_string(int max_length){
 // @param prog_name name of the executable file
 // @param input     keyboard input sent to the program
 // @param output    expected output of the program
-#define ASSERT_EXECIO_EQ(prog_name, input, output) { \
-  if ( access( prog_name, F_OK ) == -1 ) { \
-    FAIL() << "      cannot test '" prog_name "': Make sure your executable file is called '" prog_name "'"; \
-  } else {\
-    EXPECT_PRED_FORMAT3(AssertStdOut, main_output(prog_name, input), output, input); \
-  }\
-}
+#define ASSERT_EXECEQ(prog_name, input, output) \
+    EXPECT_PRED_FORMAT3(AssertExecStdOut, prog_name, input, output)
 
 // Version of ASSERT_EXECIO_EQ that uses google mock's matchers
 //
