@@ -33,7 +33,7 @@ Alternatively, you can also attach it to a volume to allow editing files from th
 ### Example
 ```docker run -it -d -v /Users/pinventado/Dropbox\ \(CSU\ Fullerton\)/Research/ILXL/CPP/volume/:/home/ --name gtest```
 
-### Connect to the docker container
+## Connect to the docker container
 ### Pattern
 ```docker attach <id or name>```
 
