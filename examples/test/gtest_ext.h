@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <future>
 #include <chrono>
+#include <map>
 #include "termcolor/termcolor.hpp"
 
 // Run and retrieves the output of an executable program from
@@ -58,6 +59,25 @@ std::string generate_string(int max_length){
       ret += possible_characters[random_index];
   }
   return ret;
+}
+
+std::string expose_special_characters(const std::string &source) {
+  if(source.length() == 0) {
+    return "<empty>";
+  }
+  std::map<char, std::string> replacement_map {
+    {' ', "<space>"},
+    {'\n', "\\n\n"}
+  };
+  std::stringstream exposed_string;
+  for(int i = 0; i < source.length(); i++) {
+    if(replacement_map.find(source[i]) != replacement_map.end()) {   
+      exposed_string << replacement_map[source[i]];
+    } else {
+      exposed_string << source[i];
+    }
+  }
+  return exposed_string.str();
 }
 
 // This macro is used to simulate the standard input (cin) for a code block
@@ -114,26 +134,30 @@ std::string generate_string(int max_length){
       exec_diff = "";
       prog_diff = prog_output[pos];
     }
-    exec_diff = exec_diff == "\n" ? R"(\n)" : exec_diff;
-    prog_diff = prog_diff == "\n" ? R"(\n)" : prog_diff;
+    exec_diff = expose_special_characters(exec_diff);
+    prog_diff = expose_special_characters(prog_diff);
 
     std::ostringstream error_str_stream;
-    std::ostringstream expected_str_stream;
-    expected_str_stream << termcolor::colorize << termcolor::green << exec_output.substr(0, pos)
-                        << termcolor::red << exec_output.substr(pos)
-                        << termcolor::reset;
-    std::ostringstream program_str_stream;
-    program_str_stream << termcolor::colorize << termcolor::green << prog_output.substr(0, pos)
-                       << termcolor::red << prog_output.substr(pos)
-                       << termcolor::reset;
+    std::ostringstream exec_str_stream;
+    exec_str_stream << termcolor::colorize << termcolor::green 
+                    << exec_output.substr(0, pos)
+                    << termcolor::red << exec_output.substr(pos)
+                    << termcolor::reset;
+
+    std::ostringstream prog_str_stream;
+    prog_str_stream << termcolor::colorize << termcolor::green 
+                    << prog_output.substr(0, pos)
+                    << termcolor::red << prog_output.substr(pos)
+                    << termcolor::reset;
+
     error_str_stream << "Your program's output did not match the expected "
                      << "output starting on line " << line_pos + 1 
                      << " character " << char_pos 
                      << ".\nExpected " << prog_diff
                      << " instead of " << exec_diff
-                     << "\n\nExpected output: \n" << expected_str_stream.str() 
+                     << "\n\nExpected output: \n" << expose_special_characters(prog_str_stream.str()) 
                      << "\n\nYour program's output: \n" 
-                     << program_str_stream.str() << "\n\nTest Input: \n" 
+                     << expose_special_characters(exec_str_stream.str()) << "\n\nTest Input: \n" 
                      << prog_input ;
     
     return ::testing::AssertionFailure() << error_str_stream.str();
