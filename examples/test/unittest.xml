@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="3" failures="1" disabled="0" errors="0" time="0.023" timestamp="2019-08-06T18:28:10" name="AllTests">
+  <testsuite name="ExecutableOutput" tests="3" failures="1" disabled="0" errors="0" time="0.02" timestamp="2019-08-06T18:28:10">
+    <testcase name="Equal" status="run" result="completed" time="0.006" timestamp="2019-08-06T18:28:10" classname="ExecutableOutput" />
+    <testcase name="Forcefail_expected_missing_Chars" status="run" result="completed" time="0.011" timestamp="2019-08-06T18:28:10" classname="ExecutableOutput">
+      <failure message="test/unittest.cpp:12&#x0A;Your program&apos;s output did not match the expected output starting on line 1 character 13.&#x0A;Expected &lt;empty&gt; instead of 2&#x0A;&#x0A;Expected output: &#x0A;[32mRestaurant:&lt;space&gt;[31m[00m&#x0A;&#x0A;Your program&apos;s output: &#x0A;[32mRestaurant:&lt;space&gt;[31m27\n&#x0A;[00m&#x0A;&#x0A;Test Input: &#x0A;" type=""><![CDATA[test/unittest.cpp:12
+Your program's output did not match the expected output starting on line 1 character 13.
+Expected <empty> instead of 2
+
+Expected output: 
+[32mRestaurant:<space>[31m[00m
+
+Your program's output: 
+[32mRestaurant:<space>[31m27\n
+[00m
+
+Test Input: 
+]]></failure>
+    </testcase>
+    <testcase name="Forcefail_program_missing_Chars" status="run" result="skipped" time="0" timestamp="2019-08-06T18:28:10" classname="ExecutableOutput" />
+  </testsuite>
+</testsuites>

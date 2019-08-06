@@ -11,7 +11,7 @@
 #include <map>
 #include "termcolor/termcolor.hpp"
 
-class FailureListener : public ::testing::EmptyTestEventListener
+class SkipListener : public ::testing::EmptyTestEventListener
 {
   private:
     size_t fatal_failures{0};

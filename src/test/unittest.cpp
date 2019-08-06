@@ -5,6 +5,7 @@
 // Place unit tests here
 
 int main(int argc, char **argv) {
-    testing::InitGoogleTest(&argc, argv);
+    testing::InitGoogleTest(&argc, argv);    
+    ::testing::UnitTest::GetInstance()->listeners().Append(new SkipListener());
     return RUN_ALL_TESTS();
 }

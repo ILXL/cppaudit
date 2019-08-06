@@ -18,6 +18,6 @@ TEST(ExecutableOutput, Forcefail_program_missing_Chars) {
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);    
-    ::testing::UnitTest::GetInstance()->listeners().Append(new FailureListener());
+    ::testing::UnitTest::GetInstance()->listeners().Append(new SkipListener());
     return RUN_ALL_TESTS();
 }
