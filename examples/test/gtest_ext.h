@@ -177,9 +177,11 @@ std::string expose_special_characters(const std::string &source) {
                      << " character " << char_pos 
                      << ".\nExpected " << prog_diff
                      << " instead of " << exec_diff
-                     << "\n\nExpected output: \n" << expose_special_characters(prog_str_stream.str()) 
+                     //<< "\n\nExpected output: \n" << expose_special_characters(prog_str_stream.str()) 
+                     << "\n\nExpected output: \n" << prog_str_stream.str()
                      << "\n\nYour program's output: \n" 
-                     << expose_special_characters(exec_str_stream.str()) << "\n\nTest Input: \n" 
+                     //<< expose_special_characters(exec_str_stream.str()) << "\n\nTest Input: \n" 
+                     << exec_str_stream.str() << "\n\nTest Input: \n" 
                      << prog_input ;
     
     return ::testing::AssertionFailure() << error_str_stream.str();
