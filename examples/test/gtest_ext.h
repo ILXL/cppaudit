@@ -20,17 +20,15 @@ class SkipListener : public ::testing::EmptyTestEventListener
     void OnTestStart(const ::testing::TestInfo& info) override
     {
       if (fatal_failures > 0) {
-         //FAIL() << "dun";
          GTEST_SKIP() << "Test skipped until other errors are fixed";
       }
     }
-
+    // Fired after the unit test runs.
     void OnTestPartResult(const ::testing::TestPartResult& result) override {
       if(result.failed()) {
         fatal_failures++;
       }
     }    
-
 };
 
 // Run and retrieves the output of an executable program from
@@ -216,7 +214,7 @@ template <typename T>
   auto pred_formatter = ::testing::internal::MakePredicateFormatterFromMatcher(matcher);
   // where: matcher_expr is the stringized matcher (e.g., StartsWith("Hello"))
   //        exec_output is the expected output, in this case the program output   
-  return pred_formatter(matcher_expr, exec_output) << "\n  Test Input: " 
+  return pred_formatter(matcher_expr, exec_output) << "\n   Input: " 
                      << prog_input;
 }
 
@@ -248,7 +246,7 @@ template <typename T>
   }, std::ref(completed)).detach();
   if(stmt_future.wait_for(std::chrono::seconds(max_dur)) == std::future_status::timeout) {
     return ::testing::AssertionFailure()
-           << "  Test Input: " << prog_input
+           << "Test Input: " << prog_input
            << "\n      the program took more than " << max_dur
            << " seconds to exit. Check for infinite loops or "
            << "unnecessary inputs.";
