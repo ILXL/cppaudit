@@ -197,6 +197,45 @@ std::string expose_special_characters(const std::string &source) {
 #define ASSERT_EXECEQ(prog_name, input, output) \
     EXPECT_PRED_FORMAT3(AssertExecStdOut, prog_name, input, output)
 
+::testing::AssertionResult AssertExecExit(const char* prog_name_expr,
+                                        const char* prog_input_expr,
+                                        const char* prog_max_dur,
+                                        std::string prog_name, 
+                                        std::string prog_input, 
+                                        int max_dur) {
+  if ( access( prog_name.c_str(), F_OK ) == -1 ) {
+    return ::testing::AssertionFailure() << "      cannot test '" << prog_name 
+                                         << "': Make sure your executable file"
+                                         << " is called '" << prog_name << "'";
+  }
+
+  std::promise<bool> completed;
+  auto stmt_future = completed.get_future();
+  std::thread([&](std::promise<bool>& completed) {
+    exec_program(prog_name, prog_input);
+    completed.set_value(true);
+  }, std::ref(completed)).detach();
+  if(stmt_future.wait_for(std::chrono::seconds(max_dur)) == std::future_status::timeout) {
+    return ::testing::AssertionFailure() << "      the program took more than " << max_dur
+                                         << " seconds to exit. Check for infinite loops or "
+                                         << "unnecessary inputs.";
+  } else {
+    return ::testing::AssertionSuccess();
+  }
+}
+
+// This macro checks whether the executable program exits given the provided
+// input.
+//
+// @param prog_name name of the executable file
+// @param input     keyboard input sent to the program
+// @param duration  time in seconds to wait for program to exit, otherwise it is
+//                  considered to have an infinite loop or requires addiitonal
+//                  input
+#define ASSERT_EXECEXIT(prog_name, input, duration) \
+    EXPECT_PRED_FORMAT3(AssertExecExit, prog_name, input, duration)
+
+
 // Version of ASSERT_EXECIO_EQ that uses google mock's matchers
 //
 // @param prog_name name of the executable file
