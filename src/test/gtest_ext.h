@@ -197,6 +197,36 @@ std::string expose_special_characters(const std::string &source) {
 #define ASSERT_EXECEQ(prog_name, input, output) \
     EXPECT_PRED_FORMAT3(AssertExecStdOut, prog_name, input, output)
 
+template <typename T>
+::testing::AssertionResult AssertExecMatcher(const char* prog_name_expr,
+                                        const char* prog_input_expr,
+                                        const char* matcher_expr,
+                                        std::string prog_name, 
+                                        std::string prog_input,
+                                        T matcher) {
+  if ( access( prog_name.c_str(), F_OK ) == -1 ) {
+    return ::testing::AssertionFailure() << "      cannot test '" << prog_name 
+                                         << "': Make sure your executable file"
+                                         << " is called '" << prog_name << "'";
+  }
+
+  std::string exec_output = exec_program(prog_name, prog_input);
+  // based on https://github.com/google/googletest/blob/fb49e6c164490a227bbb7cf5223b846c836a0305/googlemock/include/gmock/gmock-matchers.h#L1304
+  // create a predicate formatter that can be used to run the matcher
+  auto pred_formatter = ::testing::internal::MakePredicateFormatterFromMatcher(matcher);
+  // where: matcher_expr is the stringized matcher (e.g., StartsWith("Hello"))
+  //        exec_output is the expected output, in this case the program output   
+  return pred_formatter(matcher_expr, exec_output);
+}
+
+// This macro checks if the output of an executable follows the pattern defined
+// in the gMock matcher
+// @param prog_name name of the executable file
+// @param input     keyboard input sent to the program
+// @param matcher   gMock matcher used to test the executable's output
+#define ASSERT_EXECTHAT(prog_name, input, matcher) \
+  EXPECT_PRED_FORMAT3(AssertExecMatcher, prog_name, input, matcher)
+
 ::testing::AssertionResult AssertExecExit(const char* prog_name_expr,
                                         const char* prog_input_expr,
                                         const char* prog_max_dur,
