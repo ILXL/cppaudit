@@ -216,7 +216,8 @@ template <typename T>
   auto pred_formatter = ::testing::internal::MakePredicateFormatterFromMatcher(matcher);
   // where: matcher_expr is the stringized matcher (e.g., StartsWith("Hello"))
   //        exec_output is the expected output, in this case the program output   
-  return pred_formatter(matcher_expr, exec_output);
+  return pred_formatter(matcher_expr, exec_output) << "\n  Test Input: " 
+                     << prog_input;
 }
 
 // This macro checks if the output of an executable follows the pattern defined
@@ -246,9 +247,11 @@ template <typename T>
     completed.set_value(true);
   }, std::ref(completed)).detach();
   if(stmt_future.wait_for(std::chrono::seconds(max_dur)) == std::future_status::timeout) {
-    return ::testing::AssertionFailure() << "      the program took more than " << max_dur
-                                         << " seconds to exit. Check for infinite loops or "
-                                         << "unnecessary inputs.";
+    return ::testing::AssertionFailure()
+           << "  Test Input: " << prog_input
+           << "\n      the program took more than " << max_dur
+           << " seconds to exit. Check for infinite loops or "
+           << "unnecessary inputs.";
   } else {
     return ::testing::AssertionSuccess();
   }
