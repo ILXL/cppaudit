@@ -1,7 +1,7 @@
 // This file contains implementations that extend the functionality of the
 // google test framework
 // Version: 0.1.1-beta
-
+ 
 #include <gtest/gtest.h>
 #include <random>
 #include <string>
@@ -10,7 +10,7 @@
 #include <chrono>
 #include <map>
 #include "termcolor/termcolor.hpp"
-
+ 
 class SkipListener : public ::testing::EmptyTestEventListener
 {
   private:
@@ -30,7 +30,7 @@ class SkipListener : public ::testing::EmptyTestEventListener
       }
     }    
 };
-
+ 
 // Run and retrieves the output of an executable program from
 // the command line.
 //
@@ -49,7 +49,7 @@ std::string exec_program(std::string prog_name, std::string input)
   pclose(fp);
   return output;
 }
-
+ 
 // Converts a double value to a formatted string
 //
 // @param val   value to be formatted
@@ -62,7 +62,7 @@ std::string to_string_double(double val, const int prec = 2)
     out << std::fixed << std::setprecision(prec) << val;
     return out.str();
 }
-
+ 
 // Generate a string with random values from an alphanumeric character set
 //
 // @param max_length  length of string to generate
@@ -80,7 +80,7 @@ std::string generate_string(int max_length){
   }
   return ret;
 }
-
+ 
 std::string expose_special_characters(const std::string &source) {
   if(source.length() == 0) {
     return "<empty>";
@@ -99,7 +99,7 @@ std::string expose_special_characters(const std::string &source) {
   }
   return exposed_string.str();
 }
-
+ 
 // This macro is used to simulate the standard input (cin) for a code block
 //
 // @param input       simulated input
@@ -113,7 +113,7 @@ std::string expose_special_characters(const std::string &source) {
   std::cin.rdbuf(old_input_buf); \
   std::cout.rdbuf(old_output_buf); \
 }
-
+ 
 ::testing::AssertionResult AssertExecStdOut(const char* prog_name_expr,
                                         const char* prog_input_expr,
                                         const char* prog_output_expr,
@@ -156,20 +156,20 @@ std::string expose_special_characters(const std::string &source) {
     }
     exec_diff = expose_special_characters(exec_diff);
     prog_diff = expose_special_characters(prog_diff);
-
+ 
     std::ostringstream error_str_stream;
     std::ostringstream exec_str_stream;
     exec_str_stream << termcolor::colorize << termcolor::green 
                     << exec_output.substr(0, pos)
                     << termcolor::red << exec_output.substr(pos)
                     << termcolor::reset;
-
+ 
     std::ostringstream prog_str_stream;
     prog_str_stream << termcolor::colorize << termcolor::green 
                     << prog_output.substr(0, pos)
                     << termcolor::red << prog_output.substr(pos)
                     << termcolor::reset;
-
+ 
     error_str_stream << "Your program's output did not match the expected "
                      << "output starting on line " << line_pos + 1 
                      << " character " << char_pos 
@@ -177,15 +177,15 @@ std::string expose_special_characters(const std::string &source) {
                      << " instead of " << exec_diff
                      //<< "\n\nExpected output: \n" << expose_special_characters(prog_str_stream.str()) 
                      << "\n\nExpected output: \n" << prog_str_stream.str()
-                     << "\n\nYour program's output: \n" 
+                     << "\n\nYour program's output: \n"
                      //<< expose_special_characters(exec_str_stream.str()) << "\n\nTest Input: \n" 
-                     << exec_str_stream.str() << "\n\nTest Input: \n" 
+                     << exec_str_stream.str() << "\n\nInput: \n"
                      << prog_input ;
-    
+     
     return ::testing::AssertionFailure() << error_str_stream.str();
   }
 }
-
+ 
 // This macro checks if the output of an executable program matches an expected
 // output.
 //
@@ -194,7 +194,7 @@ std::string expose_special_characters(const std::string &source) {
 // @param output    expected output of the program
 #define ASSERT_EXECEQ(prog_name, input, output) \
     EXPECT_PRED_FORMAT3(AssertExecStdOut, prog_name, input, output)
-
+ 
 template <typename T>
 ::testing::AssertionResult AssertExecMatcher(const char* prog_name_expr,
                                         const char* prog_input_expr,
@@ -207,17 +207,17 @@ template <typename T>
                                          << "': Make sure your executable file"
                                          << " is called '" << prog_name << "'";
   }
-
+ 
   std::string exec_output = exec_program(prog_name, prog_input);
   // based on https://github.com/google/googletest/blob/fb49e6c164490a227bbb7cf5223b846c836a0305/googlemock/include/gmock/gmock-matchers.h#L1304
   // create a predicate formatter that can be used to run the matcher
   auto pred_formatter = ::testing::internal::MakePredicateFormatterFromMatcher(matcher);
   // where: matcher_expr is the stringized matcher (e.g., StartsWith("Hello"))
   //        exec_output is the expected output, in this case the program output   
-  return pred_formatter(matcher_expr, exec_output) << "\n   Input: " 
+  return pred_formatter(matcher_expr, exec_output) << "\n   Input: "
                      << prog_input;
 }
-
+ 
 // This macro checks if the output of an executable follows the pattern defined
 // in the gMock matcher
 // @param prog_name name of the executable file
@@ -225,7 +225,7 @@ template <typename T>
 // @param matcher   gMock matcher used to test the executable's output
 #define ASSERT_EXECTHAT(prog_name, input, matcher) \
   EXPECT_PRED_FORMAT3(AssertExecMatcher, prog_name, input, matcher)
-
+ 
 ::testing::AssertionResult AssertExecExit(const char* prog_name_expr,
                                         const char* prog_input_expr,
                                         const char* prog_max_dur,
@@ -237,7 +237,7 @@ template <typename T>
                                          << "': Make sure your executable file"
                                          << " is called '" << prog_name << "'";
   }
-
+ 
   std::promise<bool> completed;
   auto stmt_future = completed.get_future();
   std::thread([&](std::promise<bool>& completed) {
@@ -246,7 +246,7 @@ template <typename T>
   }, std::ref(completed)).detach();
   if(stmt_future.wait_for(std::chrono::seconds(max_dur)) == std::future_status::timeout) {
     return ::testing::AssertionFailure()
-           << "Test Input: " << prog_input
+           << "Input: " << prog_input
            << "\n      the program took more than " << max_dur
            << " seconds to exit. Check for infinite loops or "
            << "unnecessary inputs.";
@@ -254,7 +254,7 @@ template <typename T>
     return ::testing::AssertionSuccess();
   }
 }
-
+ 
 // This macro checks whether the executable program exits given the provided
 // input.
 //
@@ -265,8 +265,8 @@ template <typename T>
 //                  input
 #define ASSERT_EXECEXIT(prog_name, input, duration) \
     EXPECT_PRED_FORMAT3(AssertExecExit, prog_name, input, duration)
-
-
+ 
+ 
 // Version of ASSERT_EXECIO_EQ that uses google mock's matchers
 //
 // @param prog_name name of the executable file
@@ -278,7 +278,7 @@ template <typename T>
   } \
   ASSERT_THAT(main_output(prog_name, input), matcher) << "   Input: " << input; \
 }
-
+ 
 // This macro asserts that the result of performing the statement
 // is equal to the expected value in the standard output (cout)
 //
@@ -295,7 +295,7 @@ template <typename T>
   std::string your_output = output_ss.str(); \
   ASSERT_EQ(your_output, expected); \
 }
-
+ 
 // Version of ASSERT_SIO_EQ that uses google mock's matchers
 //
 // @param expected  expected string value
@@ -311,7 +311,7 @@ template <typename T>
   std::string your_output = output_ss.str(); \
   ASSERT_THAT(your_output, expected); \
 }
-
+ 
 // This macro checks whether a function executes within a given time
 //
 // A thread is created to run the statement and update the status of a promise
