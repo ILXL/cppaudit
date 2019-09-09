@@ -247,7 +247,7 @@ template <typename T>
   if(stmt_future.wait_for(std::chrono::seconds(max_dur)) == std::future_status::timeout) {
     return ::testing::AssertionFailure()
            << "Input: " << prog_input
-           << "\n      the program took more than " << max_dur
+           << "\n      The program took more than " << max_dur
            << " seconds to exit. Check for infinite loops or "
            << "unnecessary inputs.";
   } else {
