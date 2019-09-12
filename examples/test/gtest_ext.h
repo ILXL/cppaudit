@@ -334,8 +334,8 @@ template <typename T>
   }, std::ref(completed)).detach(); \
   if(stmt_future.wait_for(std::chrono::seconds(secs)) == std::future_status::timeout) \
     if (!::testing::Test::HasFatalFailure()) { \
-      GTEST_FATAL_FAILURE_("       timed out (> " #secs \
-      " seconds). Check code for infinite loops"); \
+      GTEST_FATAL_FAILURE_("       Your program took more than " #secs \
+      " seconds to exit. Check for infinite loops or unnecessary inputs."); \
     } \
     if (::testing::Test::HasFatalFailure()) FAIL(); \
 }
