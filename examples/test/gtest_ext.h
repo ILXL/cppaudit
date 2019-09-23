@@ -31,6 +31,32 @@ class SkipListener : public ::testing::EmptyTestEventListener
     }    
 };
  
+class UnitTestFileManager : public ::testing::Test {
+public:
+  UnitTestFileManager(const std::string &filename): filename_(filename) { }
+protected:
+  void SetUp() override {
+    std::ifstream my_empty_file;
+    my_empty_file.open(filename_);
+    if (my_empty_file.good()) {
+      rename(filename_.c_str(), (PREFIX + filename_).c_str());
+      file_exists = true;
+    }
+    my_empty_file.close();
+  }
+
+  void TearDown() override {
+    if (file_exists) {
+      rename((PREFIX + filename_).c_str(), filename_.c_str());
+    } else {
+      remove(filename_.c_str());
+    }
+  }
+  const std::string PREFIX{"u_test"};
+  bool file_exists = false;
+  std::string filename_;
+};
+
 // Run and retrieves the output of an executable program from
 // the command line.
 //
