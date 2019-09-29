@@ -306,12 +306,16 @@ template <typename T>
   ASSERT_THAT(main_output(prog_name, input), matcher) << "   Input: " << input; \
 }
  
-// This macro asserts that the result of performing the statement
-// is equal to the expected value in the standard output (cout)
+// This macro simulates standard input and output when calling a given statement.
+// The `input` parameter is routed to the simulated standard input stream (`std::cin`)
+// so that the given statement receives it.
+// The check block can contain statements that have access to the statement's output on the
+// standard output (`std::cout`) using either the `SIO_OUT` or `your_output variables`.
 //
-// @param expected  expected string value
+// @param input     input value
 // @param stmt      statement(s) performed
-#define ASSERT_SIO_EQ(input, expected, stmt) { \
+// @param check     code block that has access to the programs output to `std::cout`
+#define SIMULATE_SIO(input, stmt, check) { \
   std::stringstream input_ss, output_ss; \
   auto old_inputbuf = std::cin.rdbuf(input_ss.rdbuf()); \
   auto old_outputbuf = std::cout.rdbuf(output_ss.rdbuf()); \
@@ -319,14 +323,16 @@ template <typename T>
   stmt; \
   std::cin.rdbuf(old_inputbuf); \
   std::cout.rdbuf(old_outputbuf); \
-  std::string your_output = output_ss.str(); \
-  ASSERT_EQ(your_output, expected); \
+  const std::string SIO_OUT = output_ss.str(); \
+  const std::string SIO_IN = input, your_output = SIO_OUT; \
+  check; \
 }
  
 // Version of ASSERT_SIO_EQ that uses google mock's matchers
 //
 // @param expected  expected string value
 // @param stmt      statement(s) performed
+// deprecated by SIMULATE_SIO
 #define ASSERT_SIO_THAT(input, expected, stmt) { \
   std::stringstream input_ss, output_ss; \
   auto old_inputbuf = std::cin.rdbuf(input_ss.rdbuf()); \
