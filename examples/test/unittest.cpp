@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <string>
 #include "gtest_ext.h"
 
 // Place unit tests here
@@ -17,7 +18,18 @@ TEST(ExecutableOutput, Forcefail_program_missing_Chars) {
 }
 
 int main(int argc, char **argv) {
-    testing::InitGoogleTest(&argc, argv);    
-    ::testing::UnitTest::GetInstance()->listeners().Append(new SkipListener());
+    testing::InitGoogleTest(&argc, argv);
+    bool skip = true;
+    for (int i = 0; i < argc; i++)
+    {
+      if (std::string(argv[i]) == "--noskip")
+      {
+        skip = false;
+      }
+    }
+    if (skip)
+    {
+      ::testing::UnitTest::GetInstance()->listeners().Append(new SkipListener());
+    }
     return RUN_ALL_TESTS();
 }
