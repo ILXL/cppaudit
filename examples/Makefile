@@ -1,4 +1,4 @@
-TARGETS = build test stylecheck formatcheck all clean noskiptest
+TARGETS = build test stylecheck formatcheck all clean noskiptest grade
 
 .PHONY: $(TARGETS)
 
