@@ -27,19 +27,19 @@ $(OUTPUT_PATH)/unittest: $(SETTINGS_PATH)/unittest.cpp $(addprefix $(REL_ROOT_PA
 
 $(GTEST_LOC):
 	@echo -e "google test not installed\n"
-	ifeq ($(OS_NAME),darwin)
-		@echo -e "Installing cmake. Please provide the password when asked\n"
-		@brew install cmake
-		@echo -e "\nDownloading and installing googletest\n"
-		@cd /tmp/; git clone https://github.com/google/googletest; cd googletest; mkdir build; cd build; cmake .. -DCMAKE_CXX_STANDARD=17; make; make install
-		@echo -e "Finished installing google test\n"
-	else
-		@echo -e "Installing cmake. Please provide the password when asked\n"
-		@sudo apt-get install cmake # install cmake
-		@echo -e "\nDownloading and installing googletest\n"
-		@sudo apt-get install libgtest-dev libgmock-dev
-		@echo -e "Finished installing google test\n"
-	endif
+ifeq ($(OS_NAME), darwin)
+	@echo -e "Installing cmake. Please provide the password when asked\n"
+	@brew install cmake
+	@echo -e "\nDownloading and installing googletest\n"
+	@cd /tmp/; git clone https://github.com/google/googletest; cd googletest; mkdir build; cd build; cmake .. -DCMAKE_CXX_STANDARD=17; make; make install
+	@echo -e "Finished installing google test\n"
+else
+	@echo -e "Installing cmake. Please provide the password when asked\n"
+	@sudo apt-get install cmake # install cmake
+	@echo -e "\nDownloading and installing googletest\n"
+	@sudo apt-get install libgtest-dev libgmock-dev
+	@echo -e "Finished installing google test\n"
+endif
 
 test: $(GTEST_LOC) $(OUTPUT_PATH)/unittest
 	@echo -e "\n========================\nRunning unit test\n========================\n"
@@ -74,17 +74,17 @@ endif
 
 formatcheck:
 ifndef HAS_CLANGFMT
-	ifeq ($(OS_NAME),darwin)
-		@echo -e "clang-format not installed.\n"
-		@echo -e "Installing clang-format. Please provide the password when asked\n"
-		@brew install clang-format
-		@echo -e "Finished installing clang-format\n"
-	else
-		@echo -e "clang-format not installed.\n"
-		@echo -e "Installing clang-format. Please provide the password when asked\n"
-		@sudo apt-get -y install clang-format
-		@echo -e "Finished installing clang-format\n"
-	endif
+ifeq ($(OS_NAME),darwin)
+	@echo -e "clang-format not installed.\n"
+	@echo -e "Installing clang-format. Please provide the password when asked\n"
+	@brew install clang-format
+	@echo -e "Finished installing clang-format\n"
+else
+	@echo -e "clang-format not installed.\n"
+	@echo -e "Installing clang-format. Please provide the password when asked\n"
+	@sudo apt-get -y install clang-format
+	@echo -e "Finished installing clang-format\n"
+endif
 endif
 	@echo -e "========================\nRunning format checker\n========================"
 	@cd $(REL_ROOT_PATH)/ && bash $(CPPAUDIT_FROM_ROOT)/diff_format.sh $(FILES)
