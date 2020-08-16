@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="3" failures="1" disabled="0" errors="0" time="0.033" timestamp="2020-08-15T18:18:57" name="AllTests">
+  <testsuite name="ExecutableOutput" tests="3" failures="1" disabled="0" skipped="1" errors="0" time="0.033" timestamp="2020-08-15T18:18:57">
+    <testcase name="Equal" status="run" result="completed" time="0.017" timestamp="2020-08-15T18:18:57" classname="ExecutableOutput" />
+    <testcase name="Forcefail_expected_missing_Chars" status="run" result="completed" time="0.016" timestamp="2020-08-15T18:18:57" classname="ExecutableOutput">
+      <failure message="../settings/unittest.cpp:13&#x0A;Your program&apos;s output did not match the expected output starting on line 1 character 13.&#x0A;Expected &lt;empty&gt; instead of 2&#x0A;&#x0A;Expected output: &#x0A;[32mRestaurant: [31m[00m&#x0A;&#x0A;Your program&apos;s output: &#x0A;[32mRestaurant: [31m27&#x0A;[00m&#x0A;&#x0A;Input: &#x0A;" type=""><![CDATA[../settings/unittest.cpp:13
+Your program's output did not match the expected output starting on line 1 character 13.
+Expected <empty> instead of 2
+
+Expected output: 
+[32mRestaurant: [31m[00m
+
+Your program's output: 
+[32mRestaurant: [31m27
+[00m
+
+Input: 
+]]></failure>
+    </testcase>
+    <testcase name="Forcefail_program_missing_Chars" status="run" result="skipped" time="0" timestamp="2020-08-15T18:18:57" classname="ExecutableOutput">
+      <skipped message="../settings/../cppaudit/gtest_ext.h:24&#x0A;Test skipped until other errors are fixed"><![CDATA[../settings/../cppaudit/gtest_ext.h:24
+Test skipped until other errors are fixed]]></skipped>
+    </testcase>
+  </testsuite>
+</testsuites>

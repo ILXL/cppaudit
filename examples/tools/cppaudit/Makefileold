@@ -1,0 +1,84 @@
+include ../settings/config.mk
+
+SHELL         	:= /bin/bash
+
+# print %q escapes special characters in paths
+#ROOT_PATH		:= $(shell printf '%q' "$(PWD)")
+#CPP_AUDIT_PATH	:= $(shell printf '%q' "$$(pwd)")
+#SETTINGS_PATH  	:= $(shell printf '%q' "$$(cd ../settings;pwd)")
+#OUTPUT_PATH		:= $(shell printf '%q' "$$(cd ../output;pwd)")
+
+ROOT_PATH		:= $(PWD)
+CPP_AUDIT_PATH	:= $(shell pwd)
+SETTINGS_PATH	:= $(shell cd ../settings;pwd)
+OUTPUT_PATH		:= $(shell cd ../output;pwd)
+
+E_CPP_AUDIT_PATH := $(shell printf '%q' "$(CPP_AUDIT_PATH)")
+E_OUTPUT_PATH	:= $(shell printf '%q' "$(OUTPUT_PATH)")
+
+FILES			:= $(DRIVER) $(IMPLEMS) $(HEADERS)
+HAS_CLANGTDY  	:= $(shell command -v clang-tidy 2> /dev/null)
+HAS_CLANGFMT  	:= $(shell command -v clang-format 2> /dev/null)
+
+.PHONY: test stylecheck formatcheck all clean noskiptest
+
+$(E_OUTPUT_PATH)/unittest: $(SETTINGS_PATH)/unittest.cpp $(addprefix $(ROOT_PATH), $(DRIVER) $(IMPLEMS) $(HEADERS))
+	@clang++ -std=c++17 -fsanitize=address $(addprefix $(ROOT_PATH), $(IMPLEMS)) $(SETTINGS_PATH)/unittest.cpp -o $(OUTPUT_PATH)/unittest -pthread -lgtest $(UT_COMPILE_FLAGS)
+
+/usr/lib/libgtest.a:
+	@echo -e "google test library not installed\n"
+	@echo -e "Installing cmake. Please provide the password when asked\n"
+	@sudo apt-get install cmake # install cmake
+	@echo -e "\nDownloading and installing googletest\n"
+	@cd /tmp/; git clone https://github.com/google/googletest.git; cd googletest; cmake CMakeLists.txt; make; sudo cp -r googletest/include/. /usr/include; sudo cp -r googlemock/include/. /usr/include; sudo cp lib/*.a /usr/lib
+	@echo -e "Finished installing google test library\n"
+
+test: $(E_OUTPUT_PATH)/unittest
+	@echo -e "\n========================\nRunning unit test\n========================\n"
+	./$(OUTPUT_PATH)/unittest --gtest_output="xml:test/unittest.xml"
+	@echo -e "\n========================\nUnit test complete\n========================\n"
+
+noskiptest: /usr/lib/libgtest.a $(TEST_PATH)/unittest
+	@echo -e "\n========================\nRunning unit test\n========================\n"
+	@./$(OUTPUT_PATH)/unittest --noskip --gtest_output="xml:test/unittest.xml"
+	@echo -e "\n========================\nUnit test complete\n========================\n"
+
+
+$(OUTPUT_PATH)/compile_commands.json :
+	@bash $(E_CPP_AUDIT_PATH)/gen_ccjs.sh $(EXECFILE) $(DRIVER) "$(IMPLEMS)" "$(HEADERS)"
+ifndef HAS_CLANGTDY
+	@echo -e "clang-tidy not installed\n"
+	@echo -e "Installing clang-tidy. Please provide password when asked\n"
+	@sudo apt-get -y install clang-tidy
+	@echo -e "Finished installing clang-tidy\n"
+endif
+
+stylecheck: $(OUTPUT_PATH)/compile_commands.json
+	@echo -e "========================\nRunning style checker\n========================\n"
+	@clang-tidy  -quiet -checks=$(CLANGTDY_CHKS) -header-filter=.* -export-fixes=$(OUTPUTPATH)/style.yaml $(IMPLEMS) $(HEADERS) $(DRIVER)
+	@echo -e "========================\nStyle checker complete\n========================\n"
+
+formatcheck:
+ifndef HAS_CLANGFMT
+	@echo -e "clang-format not installed.\n"
+	@echo -e "Installing clang-format. Please provide the password when asked\n"
+	@sudo apt-get -y install clang-format
+	@echo -e "Finished installing clang-format\n"
+endif
+	@echo -e "========================\nRunning format checker\n========================"
+	@bash diff_format.sh $(FILES)
+	@clang-format $(FILES) -output-replacements-xml > tools/output/format.xml
+	@echo -e "========================\nFormat checking complete\n========================\n"
+
+all:	test stylecheck formatcheck
+
+clean:
+	# echo $(ROOT_PATH)
+	# echo $(CPP_AUDIT_PATH)
+	# echo $(SETTINGS_PATH)
+	# echo $(E_OUTPUT_PATH)
+	@rm -f $(E_OUTPUT_PATH)/unittest.xml
+	@rm -f $(E_OUTPUT_PATH)/style.yaml
+	@rm -f $(E_OUTPUT_PATH)/format.xml
+	@rm -f $(E_OUTPUT_PATH)/compile_commands.json
+	@rm -f $(E_OUTPUT_PATH)/unittest
