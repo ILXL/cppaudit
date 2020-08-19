@@ -2,6 +2,7 @@
 #include <gmock/gmock.h>
 #include <string>
 #include "../cppaudit/gtest_ext.h"
+#include "../../algebra.hpp"
 
 // Place unit tests here
 TEST(ExecutableOutput, Equal) {
