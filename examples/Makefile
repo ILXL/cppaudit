@@ -5,14 +5,17 @@ TARGETS = test stylecheck formatcheck all noskiptest grade
 $(TARGETS): 
 	@$(MAKE) -C tools/cppaudit $(MAKECMDGOALS)
 
-output:
+tools/cppaudit:
+	@mkdir tools/cppaudit
+	
+tools/output:
 	@mkdir tools/output
 
 tools:
 	@mkdir tools
 	
-cppaudit: tools output
-	@cp -R ../cppaudit tools
+cppaudit: tools tools/cppaudit tools/output 
+	cp -R $(addprefix ../,$(shell ls ../ | grep -v examples)) tools/cppaudit
 	
 build: cppaudit
 	@clang++ -std=c++17 *.cpp -o main
