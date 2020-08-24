@@ -6,13 +6,11 @@ $(TARGETS):
 	@$(MAKE) -C tools/cppaudit $(MAKECMDGOALS)
 
 tools/cppaudit:
-	@mkdir tools/cppaudit
+	@mkdir -p tools/cppaudit
 	
 tools/output:
-	@mkdir tools/output
+	@mkdir -p tools/output
 
-tools:
-	@mkdir tools
 	
 cppaudit: tools tools/cppaudit tools/output 
 	cp -R $(addprefix ../,$(shell ls ../ | grep -v examples)) tools/cppaudit
