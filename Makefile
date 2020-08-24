@@ -12,6 +12,8 @@ OUTPUT_FROM_ROOT 	:= $(shell realpath --relative-to=$(ROOT_PATH) $(OUTPUT_PATH))
 FILES         		:= $(DRIVER) $(IMPLEMS) $(HEADERS)
 HAS_CLANGTDY  		:= $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  		:= $(shell command -v clang-format 2> /dev/null)
+HAS_GTEST         	:= $(shell echo -e "int main() { }" >> test.cc; clang++ test.cc -o test -lgtest; echo $$?; rm -f test.cc test;)
+
 # Google test library location in MacOSX
 GTEST_LOC		:= /usr/local/lib/libgtest.a
 
@@ -23,12 +25,13 @@ ifneq ($(LIBGTEST_LOC),,)
 endif
 endif
 
-.PHONY: test stylecheck formatcheck all clean noskiptest
+.PHONY: test stylecheck formatcheck all clean noskiptest instal_gtest
 
 $(OUTPUT_PATH)/unittest: $(SETTINGS_PATH)/unittest.cpp $(addprefix $(REL_ROOT_PATH)/, $(DRIVER) $(IMPLEMS) $(HEADERS))
 	@clang++ -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS)) $(SETTINGS_PATH)/unittest.cpp -o $(OUTPUT_PATH)/unittest -pthread -lgtest
 
-$(GTEST_LOC):
+install_gtest:
+ifeq ($(HAS_GTEST),1)
 	@echo -e "google test not installed\n"
 ifeq ($(OS_NAME), darwin)
 	@echo -e "Installing cmake. Please provide the password when asked\n"
@@ -43,13 +46,14 @@ else
 	@sudo apt-get install libgtest-dev libgmock-dev
 	@echo -e "Finished installing google test\n"
 endif
+endif
 
-test: $(GTEST_LOC) $(OUTPUT_PATH)/unittest
+test: install_gtest $(OUTPUT_PATH)/unittest
 	@echo -e "\n========================\nRunning unit test\n========================\n"
 	@cd $(REL_ROOT_PATH)/ && ./$(OUTPUT_FROM_ROOT)/unittest --gtest_output="xml:$(OUTPUT_FROM_ROOT)/unittest.xml"
 	@echo -e "\n========================\nUnit test complete\n========================\n"
 
-noskiptest: $(GTEST_LOC) $(OUTPUT_PATH)/unittest
+noskiptest: install_gtest $(OUTPUT_PATH)/unittest
 	@echo -e "\n========================\nRunning unit test\n========================\n"
 	@cd $(REL_ROOT_PATH)/ && ./$(OUTPUT_FROM_ROOT)/unittest --noskip --gtest_output="xml:$(OUTPUT_FROM_ROOT)/unittest.xml"
 	@echo -e "\n========================\nUnit test complete\n========================\n"
@@ -96,10 +100,6 @@ endif
 all:	test stylecheck formatcheck
 
 clean:
-	# echo $(CPP_AUDIT_PATH)
-	# echo $(ROOT_PATH)
-	# echo $(OS_NAME)
-	# echo $(GTEST_LOC)
 	@rm -f $(OUTPUT_PATH)/unittest.xml
 	@rm -f $(OUTPUT_PATH)/style.yaml
 	@rm -f $(OUTPUT_PATH)/format.xml
