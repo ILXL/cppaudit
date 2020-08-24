@@ -21,7 +21,8 @@
                     modernize-use-nullptr,
                     modernize-use-override,
                     modernize-use-transparent-functors,
-                    readability-redundant-member-init'
+                    readability-redundant-member-init,
+                    readability-magic-numbers'
   CheckOptions:
     # This relaxes modernize-use-emplace in some cases; we might want to make it
     # more aggressive in the future. See discussion on
