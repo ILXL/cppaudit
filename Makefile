@@ -68,7 +68,7 @@ else
 endif
 endif
 	@echo -e "========================\nRunning style checker\n========================\n"
-	@cd $(REL_ROOT_PATH)/ && clang-tidy -p=$(OUTPUT_FROM_ROOT) -quiet -checks=$(CLANGTDY_CHKS) -header-filter=.* -export-fixes=$(OUTPUT_FROM_ROOT)/style.yaml $(IMPLEMS) $(HEADERS) $(DRIVER)
+	@cd $(REL_ROOT_PATH)/ && clang-tidy -p=$(OUTPUT_FROM_ROOT) -quiet -header-filter=.* -export-fixes=$(OUTPUT_FROM_ROOT)/style.yaml $(IMPLEMS) $(HEADERS) $(DRIVER)
 	@echo -e "========================\nStyle checker complete\n========================\n"
 
 formatcheck:

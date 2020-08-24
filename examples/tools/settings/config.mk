@@ -12,4 +12,3 @@ IMPLEMS       		:= algebra.cpp
 DRIVER        		:= main.cpp
 # Expected name of executable file
 EXEC_FILE      		:= main
-CLANGTDY_CHKS 		:= *,-google-build-using-namespace,-fuchsia-default-arguments,-llvm-header-guard
