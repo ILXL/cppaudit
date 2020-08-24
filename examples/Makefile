@@ -20,7 +20,10 @@ cppaudit: tools tools/cppaudit tools/output
 build: cppaudit
 	@clang++ -std=c++17 *.cpp -o main
 
+tclean:
+	$(MAKE) -C tools/cppaudit clean
+
 clean:
 	@rm -rf tools/cppaudit
 	@rm -rf tools/output
-	@rm main
+	@rm -f main
