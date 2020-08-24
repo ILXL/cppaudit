@@ -14,18 +14,7 @@ HAS_CLANGTDY  		:= $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  		:= $(shell command -v clang-format 2> /dev/null)
 HAS_GTEST         	:= $(shell echo -e "int main() { }" >> test.cc ; clang++ test.cc -o test -lgtest 2> /dev/null; echo $$?; rm -f test.cc test;)
 
-# Google test library location in MacOSX
-GTEST_LOC		:= /usr/local/lib/libgtest.a
-
-# Replace with Google test library location in Ubuntu if applicable
-ifneq ($(OS_NAME), darwin)
-	LIBGTEST_LOC=$(subst libgtest: ,,$(shell whereis libgtest))
-ifneq ($(LIBGTEST_LOC),,)
-	GTEST_LOC=$(LIBGTEST_LOC)
-endif
-endif
-
-.PHONY: test stylecheck formatcheck all clean noskiptest instal_gtest
+.PHONY: test stylecheck formatcheck all clean noskiptest install_gtest
 
 $(OUTPUT_PATH)/unittest: $(SETTINGS_PATH)/unittest.cpp $(addprefix $(REL_ROOT_PATH)/, $(DRIVER) $(IMPLEMS) $(HEADERS))
 	@clang++ -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS)) $(SETTINGS_PATH)/unittest.cpp -o $(OUTPUT_PATH)/unittest -pthread -lgtest
@@ -40,11 +29,15 @@ ifeq ($(OS_NAME), darwin)
 	@cd /tmp/; git clone https://github.com/google/googletest; cd googletest; mkdir build; cd build; cmake .. -DCMAKE_CXX_STANDARD=17; make; make install
 	@echo -e "Finished installing google test\n"
 else
+ifneq ($(shell lsb_release -sr), 20.04)
+	@cd /tmp/; git clone https://github.com/google/googletest; cd googletest; mkdir build; cd build; cmake .. -DCMAKE_CXX_STANDARD=17; make; make install
+else
 	@echo -e "Installing cmake. Please provide the password when asked\n"
 	@sudo apt-get install cmake # install cmake
 	@echo -e "\nDownloading and installing googletest\n"
 	@sudo apt-get install libgtest-dev libgmock-dev
 	@echo -e "Finished installing google test\n"
+endif
 endif
 endif
 
