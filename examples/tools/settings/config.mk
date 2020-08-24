@@ -1,5 +1,7 @@
 # Compiler
 CC			:= clang++
+## Unittest name
+UTNAME		:= unittest.cpp
 # Flags added to compilation step
 COMPILE_FLAGS		:= 
 # Flags added to unittest compilation step

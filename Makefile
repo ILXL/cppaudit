@@ -14,10 +14,18 @@ HAS_CLANGTDY  		:= $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  		:= $(shell command -v clang-format 2> /dev/null)
 HAS_GTEST         	:= $(shell echo -e "int main() { }" >> test.cc ; clang++ test.cc -o test -lgtest 2> /dev/null; echo $$?; rm -f test.cc test;)
 
+ifndef ($(CC))
+  CC = clang++
+endif
+
+ifndef ($(UTNAME))
+  UTNAME = unittest.cpp
+endif
+
 .PHONY: test stylecheck formatcheck all clean noskiptest install_gtest
 
 $(OUTPUT_PATH)/unittest: $(SETTINGS_PATH)/unittest.cpp $(addprefix $(REL_ROOT_PATH)/, $(DRIVER) $(IMPLEMS) $(HEADERS))
-	@clang++ -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS)) $(SETTINGS_PATH)/unittest.cpp -o $(OUTPUT_PATH)/unittest -pthread -lgtest
+	@$(CC) -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS)) $(SETTINGS_PATH)/$(UTNAME) -o $(OUTPUT_PATH)/unittest -pthread -lgtest
 
 install_gtest:
 ifeq ($(HAS_GTEST),1)
