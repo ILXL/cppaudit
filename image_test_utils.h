@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "../cpputils/graphics/image.h"
+#include "../../cpputils/graphics/image.h"
 
 #ifndef IMAGE_TEST_UTILS_H
 #define IMAGE_TEST_UTILS_H

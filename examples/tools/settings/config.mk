@@ -9,6 +9,6 @@ HEADERS      		:=
 # Space-separated list of implementation files (e.g., algebra.cpp)
 IMPLEMS       		:=
 # File containing main (e.g., main.cpp)
-DRIVER        		:= main.cpp
+DRIVER        		:= main.cc
 # Expected name of executable file
 EXEC_FILE      		:= main
