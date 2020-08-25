@@ -1,3 +1,1 @@
-#include <iostream>
-using namespace std;
-int cube (int    number);
+int cube(int number);

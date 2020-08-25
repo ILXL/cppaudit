@@ -12,23 +12,23 @@ OUTPUT_FROM_ROOT 	:= $(shell realpath --relative-to=$(ROOT_PATH) $(OUTPUT_PATH))
 FILES         		:= $(DRIVER) $(IMPLEMS) $(HEADERS)
 HAS_CLANGTDY  		:= $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  		:= $(shell command -v clang-format 2> /dev/null)
-# Google test library location in MacOSX
-GTEST_LOC		:= /usr/local/lib/libgtest.a
+HAS_GTEST         	:= $(shell echo -e "int main() { }" >> test.cc ; clang++ test.cc -o test -lgtest 2> /dev/null; echo $$?; rm -f test.cc test;)
 
-# Replace with Google test library location in Ubuntu if applicable
-ifneq ($(OS_NAME), darwin)
-	LIBGTEST_LOC=$(subst libgtest: ,,$(shell whereis libgtest))
-ifneq ($(LIBGTEST_LOC),,)
-	GTEST_LOC=$(LIBGTEST_LOC)
-endif
+ifndef ($(CC))
+  CC = clang++
 endif
 
-.PHONY: test stylecheck formatcheck all clean noskiptest
+ifndef ($(UTNAME))
+  UTNAME = unittest.cpp
+endif
+
+.PHONY: test stylecheck formatcheck all clean noskiptest install_gtest
 
 $(OUTPUT_PATH)/unittest: $(SETTINGS_PATH)/unittest.cpp $(addprefix $(REL_ROOT_PATH)/, $(DRIVER) $(IMPLEMS) $(HEADERS))
-	@clang++ -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS)) $(SETTINGS_PATH)/unittest.cpp -o $(OUTPUT_PATH)/unittest -pthread -lgtest
+	@$(CC) -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS)) $(SETTINGS_PATH)/$(UTNAME) -o $(OUTPUT_PATH)/unittest -pthread -lgtest
 
-$(GTEST_LOC):
+install_gtest:
+ifeq ($(HAS_GTEST),1)
 	@echo -e "google test not installed\n"
 ifeq ($(OS_NAME), darwin)
 	@echo -e "Installing cmake. Please provide the password when asked\n"
@@ -37,19 +37,24 @@ ifeq ($(OS_NAME), darwin)
 	@cd /tmp/; git clone https://github.com/google/googletest; cd googletest; mkdir build; cd build; cmake .. -DCMAKE_CXX_STANDARD=17; make; make install
 	@echo -e "Finished installing google test\n"
 else
+ifneq ($(shell lsb_release -sr), 20.04)
+	@cd /tmp/; git clone https://github.com/google/googletest; cd googletest; mkdir build; cd build; cmake .. -DCMAKE_CXX_STANDARD=17; make; make install
+else
 	@echo -e "Installing cmake. Please provide the password when asked\n"
 	@sudo apt-get install cmake # install cmake
 	@echo -e "\nDownloading and installing googletest\n"
 	@sudo apt-get install libgtest-dev libgmock-dev
 	@echo -e "Finished installing google test\n"
 endif
+endif
+endif
 
-test: $(GTEST_LOC) $(OUTPUT_PATH)/unittest
+test: install_gtest $(OUTPUT_PATH)/unittest
 	@echo -e "\n========================\nRunning unit test\n========================\n"
 	@cd $(REL_ROOT_PATH)/ && ./$(OUTPUT_FROM_ROOT)/unittest --gtest_output="xml:$(OUTPUT_FROM_ROOT)/unittest.xml"
 	@echo -e "\n========================\nUnit test complete\n========================\n"
 
-noskiptest: $(GTEST_LOC) $(OUTPUT_PATH)/unittest
+noskiptest: install_gtest $(OUTPUT_PATH)/unittest
 	@echo -e "\n========================\nRunning unit test\n========================\n"
 	@cd $(REL_ROOT_PATH)/ && ./$(OUTPUT_FROM_ROOT)/unittest --noskip --gtest_output="xml:$(OUTPUT_FROM_ROOT)/unittest.xml"
 	@echo -e "\n========================\nUnit test complete\n========================\n"
@@ -71,7 +76,7 @@ else
 endif
 endif
 	@echo -e "========================\nRunning style checker\n========================\n"
-	@cd $(REL_ROOT_PATH)/ && clang-tidy -p=$(OUTPUT_FROM_ROOT) -quiet -checks=$(CLANGTDY_CHKS) -header-filter=.* -export-fixes=$(OUTPUT_FROM_ROOT)/style.yaml $(IMPLEMS) $(HEADERS) $(DRIVER)
+	@cd $(REL_ROOT_PATH)/ && clang-tidy -p=$(OUTPUT_FROM_ROOT) -quiet -header-filter=.* -export-fixes=$(OUTPUT_FROM_ROOT)/style.yaml $(IMPLEMS) $(HEADERS) $(DRIVER)
 	@echo -e "========================\nStyle checker complete\n========================\n"
 
 formatcheck:
@@ -96,10 +101,6 @@ endif
 all:	test stylecheck formatcheck
 
 clean:
-	# echo $(CPP_AUDIT_PATH)
-	# echo $(ROOT_PATH)
-	# echo $(OS_NAME)
-	# echo $(GTEST_LOC)
 	@rm -f $(OUTPUT_PATH)/unittest.xml
 	@rm -f $(OUTPUT_PATH)/style.yaml
 	@rm -f $(OUTPUT_PATH)/format.xml
