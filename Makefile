@@ -14,17 +14,20 @@ HAS_CLANGTDY  		:= $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  		:= $(shell command -v clang-format 2> /dev/null)
 HAS_GTEST         	:= $(shell echo -e "int main() { }" >> test.cc ; clang++ test.cc -o test -lgtest 2> /dev/null; echo $$?; rm -f test.cc test;)
 
-ifndef ($(CC))
+ifeq ($(CC),)
   CC = clang++
 endif
 
-ifndef ($(UTNAME))
+ifeq ($(UTNAME),)
   UTNAME = unittest.cpp
 endif
 
 .PHONY: test stylecheck formatcheck all clean noskiptest install_gtest
 
-$(OUTPUT_PATH)/unittest: $(SETTINGS_PATH)/unittest.cpp $(addprefix $(REL_ROOT_PATH)/, $(DRIVER) $(IMPLEMS) $(HEADERS))
+$(OUTPUT_PATH):
+	@mkdir -p $(OUTPUT_PATH)
+
+$(OUTPUT_PATH)/unittest: $(OUTPUT_PATH) $(SETTINGS_PATH)/$(UTNAME) $(addprefix $(REL_ROOT_PATH)/, $(DRIVER) $(IMPLEMS) $(HEADERS))
 	@$(CC) -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS)) $(SETTINGS_PATH)/$(UTNAME) -o $(OUTPUT_PATH)/unittest -pthread -lgtest
 
 install_gtest:
@@ -38,7 +41,7 @@ ifeq ($(OS_NAME), darwin)
 	@echo -e "Finished installing google test\n"
 else
 ifneq ($(shell lsb_release -sr), 20.04)
-	@cd /tmp/; git clone https://github.com/google/googletest; cd googletest; mkdir build; cd build; cmake .. -DCMAKE_CXX_STANDARD=17; make; make install
+	@cd /tmp/; git clone https://github.com/google/googletest.git; cd googletest; cmake CMakeLists.txt; make; sudo cp -r googletest/include/. /usr/include; sudo cp -r googlemock/include/. /usr/include; sudo cp lib/*.a /usr/lib
 else
 	@echo -e "Installing cmake. Please provide the password when asked\n"
 	@sudo apt-get install cmake # install cmake
