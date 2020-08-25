@@ -1,6 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "../cppaudit/gtest_ext.h"
+#include "../cppaudit/image_test_utils.h"
 #include "../../algebra.hpp"
 
 using ::testing::HasSubstr;

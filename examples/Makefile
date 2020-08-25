@@ -1,27 +1,12 @@
-TARGETS = test stylecheck formatcheck all noskiptest grade
+TARGETS = test stylecheck formatcheck all noskiptest grade clean
 
 .PHONY: $(TARGETS)
 
-$(TARGETS): 
-	@$(MAKE) -C tools/cppaudit $(MAKECMDGOALS)
-
-tools/cppaudit:
-	@mkdir -p tools/cppaudit
-	
 tools/output:
 	@mkdir -p tools/output
 
-	
-cppaudit: tools tools/cppaudit tools/output 
-	cp -R $(addprefix ../,$(shell ls ../ | grep -v examples)) tools/cppaudit
-	
-build: cppaudit
-	@clang++ -std=c++17 *.cpp -o main
+$(TARGETS): tools/output
+	@$(MAKE) -C tools/cppaudit $(MAKECMDGOALS)
 
-tclean:
-	$(MAKE) -C tools/cppaudit clean
-
-clean:
-	@rm -rf tools/cppaudit
-	@rm -rf tools/output
-	@rm -f main
+build:
+	clang++ -std=c++17 $(DRIVER) $(IMPLEMS) cpputils/graphics/image.cc -o main $(COMPILE_FLAGS)

@@ -24,7 +24,7 @@ $(OUTPUT_PATH):
 	@mkdir -p $(OUTPUT_PATH)
 
 $(OUTPUT_PATH)/unittest: $(OUTPUT_PATH) $(SETTINGS_PATH)/$(UTNAME) $(addprefix $(REL_ROOT_PATH)/, $(DRIVER) $(IMPLEMS) $(HEADERS))
-	@clang++ -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS)) $(SETTINGS_PATH)/$(UTNAME) -o $(OUTPUT_PATH)/unittest -pthread -lgtest
+	@clang++ -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS)) $(SETTINGS_PATH)/$(UTNAME) -o $(OUTPUT_PATH)/unittest -pthread -lgtest $(UT_COMPILE_FLAGS)
 
 install_gtest:
 ifeq ($(HAS_GTEST),1)
@@ -47,6 +47,9 @@ else
 endif
 endif
 endif
+
+build:
+	@clang++ -std=c++17 $(DRIVER) $(IMPLEMS) cpputils/graphics/image.cc -o main $(COMPILE_FLAGS)
 
 test: install_gtest $(OUTPUT_PATH)/unittest
 	@echo -e "\n========================\nRunning unit test\n========================\n"

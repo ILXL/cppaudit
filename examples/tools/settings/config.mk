@@ -1,13 +1,13 @@
 ## Unittest name
-UTNAME		:= unittest.cpp
+UTNAME		:= unittest.cc
 # Flags added to compilation step
-COMPILE_FLAGS		:= 
+COMPILE_FLAGS		:= -lm -lX11 -lpthread
 # Flags added to unittest compilation step
-UT_COMPILE_FLAGS	:=
+UT_COMPILE_FLAGS	:= -lm -lX11 -lpthread
 # Space-separated list of header files (e.g., algebra.hpp)
-HEADERS      		:= algebra.hpp
+HEADERS      		:=
 # Space-separated list of implementation files (e.g., algebra.cpp)
-IMPLEMS       		:= algebra.cpp
+IMPLEMS       		:=
 # File containing main (e.g., main.cpp)
 DRIVER        		:= main.cpp
 # Expected name of executable file
