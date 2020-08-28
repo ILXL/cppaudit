@@ -26,5 +26,4 @@ do
   ENTRIES=${ENTRIES}"    \"file\" : \"$WD/$HEADERS\"\n  },\n"
 done
 ENTRIES=${ENTRIES}"]"
-echo -e "$OUTPUT_PATH/compile_commands.json"
 echo -e $ENTRIES > $OUTPUT_PATH/compile_commands.json
