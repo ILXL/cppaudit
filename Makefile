@@ -14,6 +14,11 @@ HAS_CLANGTDY  		:= $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  		:= $(shell command -v clang-format 2> /dev/null)
 HAS_GTEST         	:= $(shell echo -e "int main() { }" >> test.cc ; clang++ test.cc -o test -lgtest 2> /dev/null; echo $$?; rm -f test.cc test;)
 
+ifeq ($(OS_NAME), darwin)
+	COMPILE_FLAGS := $(MAC_COMPILE_FLAGS)
+	UT_COMPILE_FLAGS := $(MAC_UT_COMPILE_FLAGS)
+endif
+
 ifeq ($(UTNAME),)
   UTNAME = unittest.cpp
 endif
