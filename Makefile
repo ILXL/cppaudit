@@ -14,22 +14,34 @@ HAS_CLANGTDY  		:= $(shell command -v clang-tidy 2> /dev/null)
 HAS_CLANGFMT  		:= $(shell command -v clang-format 2> /dev/null)
 HAS_GTEST         	:= $(shell echo -e "int main() { }" >> test.cc ; clang++ test.cc -o test -lgtest 2> /dev/null; echo $$?; rm -f test.cc test;)
 
+ifeq ($(OS_NAME), darwin)
+	COMPILE_FLAGS	:= $(MAC_COMPILE_FLAGS)
+	UT_COMPILE_FLAGS	:= $(MAC_UT_COMPILE_FLAGS)
+	HAS_BREW	:= $(shell command -v brew 2> /dev/null)
+endif
+
 ifeq ($(UTNAME),)
   UTNAME = unittest.cpp
 endif
 
-.PHONY: test stylecheck formatcheck all clean noskiptest install_gtest
+.PHONY: build test stylecheck formatcheck all clean noskiptest install_gtest
 
 $(OUTPUT_PATH):
 	@mkdir -p $(OUTPUT_PATH)
 
 $(OUTPUT_PATH)/unittest: $(OUTPUT_PATH) $(SETTINGS_PATH)/$(UTNAME) $(addprefix $(REL_ROOT_PATH)/, $(DRIVER) $(IMPLEMS) $(HEADERS))
-	@clang++ -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS)) $(SETTINGS_PATH)/$(UTNAME) -o $(OUTPUT_PATH)/unittest -pthread -lgtest
+	@clang++ -std=c++17 -fsanitize=address $(addprefix $(REL_ROOT_PATH)/, $(IMPLEMS) $(OTHER_IMPLEMS)) $(SETTINGS_PATH)/$(UTNAME) -o $(OUTPUT_PATH)/unittest -pthread -lgtest $(UT_COMPILE_FLAGS)
 
 install_gtest:
 ifeq ($(HAS_GTEST),1)
 	@echo -e "google test not installed\n"
 ifeq ($(OS_NAME), darwin)
+ifndef ($(HAS_BREW))
+	@echo -e "Installing brew, please provide your password when asked.\n"
+	@/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+	@brew install coreutils
+	# Need to redefine the path directories otherwise this will fail the first time.
+endif
 	@echo -e "Installing cmake. Please provide the password when asked\n"
 	@brew install cmake
 	@echo -e "\nDownloading and installing googletest\n"
@@ -47,6 +59,9 @@ else
 endif
 endif
 endif
+
+build:
+	@cd $(ROOT_PATH)/ && clang++ -std=c++17 $(DRIVER) $(IMPLEMS) $(OTHER_IMPLEMS) -o main $(COMPILE_FLAGS)
 
 test: install_gtest $(OUTPUT_PATH)/unittest
 	@echo -e "\n========================\nRunning unit test\n========================\n"
@@ -93,7 +108,7 @@ else
 endif
 endif
 	@echo -e "========================\nRunning format checker\n========================"
-	@cd $(REL_ROOT_PATH)/ && bash $(CPPAUDIT_FROM_ROOT)/diff_format.sh $(FILES)
+	@cd $(REL_ROOT_PATH)/ && bash $(CPPAUDIT_FROM_ROOT)/diff_format.sh $(CLANG_FORMAT_FLAGS) $(FILES)
 	@cd $(REL_ROOT_PATH)/ && clang-format $(FILES) -output-replacements-xml > $(OUTPUT_FROM_ROOT)/format.xml
 	@echo -e "========================\nFormat checking complete\n========================\n"
 
