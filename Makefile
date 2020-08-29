@@ -108,7 +108,7 @@ else
 endif
 endif
 	@echo -e "========================\nRunning format checker\n========================"
-	@cd $(REL_ROOT_PATH)/ && bash $(CPPAUDIT_FROM_ROOT)/diff_format.sh $(FILES)
+	@cd $(REL_ROOT_PATH)/ && bash $(CPPAUDIT_FROM_ROOT)/diff_format.sh $(CLANG_FORMAT_FLAGS) $(FILES)
 	@cd $(REL_ROOT_PATH)/ && clang-format $(FILES) -output-replacements-xml > $(OUTPUT_FROM_ROOT)/format.xml
 	@echo -e "========================\nFormat checking complete\n========================\n"
 
