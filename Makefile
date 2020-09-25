@@ -11,12 +11,14 @@ REL_ROOT_PATH		:= $(shell realpath --relative-to=$(CPP_AUDIT_PATH) $(ROOT_PATH))
 OUTPUT_FROM_ROOT 	:= $(shell realpath --relative-to=$(ROOT_PATH) $(OUTPUT_PATH))
 FILES         		:= $(DRIVER) $(IMPLEMS) $(HEADERS)
 HAS_CLANGTDY  		:= $(shell command -v clang-tidy 2> /dev/null)
-HAS_CLANGFMT  		:= $(shell command -v clang-format 2> /dev/null)
+HAS_CLANGFMT  		:= $(shell command -v clang-format-6.0 2> /dev/null)
 HAS_GTEST         	:= $(shell echo -e "int main() { }" >> test.cc ; clang++ test.cc -o test -lgtest 2> /dev/null; echo $$?; rm -f test.cc test;)
 
 ifeq ($(OS_NAME), darwin)
 	COMPILE_FLAGS	:= $(MAC_COMPILE_FLAGS)
 	UT_COMPILE_FLAGS	:= $(MAC_UT_COMPILE_FLAGS)
+	# Mac doesn't have clang-format 6.0, must use default version.
+	HAS_CLANGFMT  		:= $(shell command -v clang-format 2> /dev/null)
 	HAS_BREW	:= $(shell command -v brew 2> /dev/null)
 endif
 
@@ -96,20 +98,24 @@ endif
 formatcheck:
 ifndef HAS_CLANGFMT
 ifeq ($(OS_NAME),darwin)
-	@echo -e "clang-format not installed.\n"
+	@echo -e "clang-format not installed.\nNOTE: Mac doesn't support clang-format 6 which is used for grading.\n"
 	@echo -e "Installing clang-format. Please provide the password when asked\n"
 	@brew install clang-format
 	@echo -e "Finished installing clang-format\n"
 else
-	@echo -e "clang-format not installed.\n"
-	@echo -e "Installing clang-format. Please provide the password when asked\n"
-	@sudo apt-get -y install clang-format
-	@echo -e "Finished installing clang-format\n"
+	@echo -e "clang-format-6.0 not installed.\n"
+	@echo -e "Installing clang-format-6.0. Please provide the password when asked\n"
+	@sudo apt-get -y install clang-format-6.0
+	@echo -e "Finished installing clang-format-6.0\n"
 endif
 endif
 	@echo -e "========================\nRunning format checker\n========================"
 	@cd $(REL_ROOT_PATH)/ && bash $(CPPAUDIT_FROM_ROOT)/diff_format.sh $(CLANG_FORMAT_FLAGS) $(FILES)
+ifeq ($(OS_NAME),darwin)
 	@cd $(REL_ROOT_PATH)/ && clang-format $(FILES) -output-replacements-xml > $(OUTPUT_FROM_ROOT)/format.xml
+else
+	@cd $(REL_ROOT_PATH)/ && clang-format-6.0 $(FILES) -output-replacements-xml > $(OUTPUT_FROM_ROOT)/format.xml
+endif
 	@echo -e "========================\nFormat checking complete\n========================\n"
 
 all:	test stylecheck formatcheck
