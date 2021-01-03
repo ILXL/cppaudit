@@ -3,27 +3,21 @@ WD=`pwd`
 OUTPUT_PATH=$1
 EXECFILE=$2
 DRIVER=$3
-IMPLEMS=$4
-HEADERS=$5
+shift 3
 
 ENTRIES="[\n"
 
 ENTRIES=${ENTRIES}"  {\n   \"directory\" : \"$WD\",\n"
-ENTRIES=${ENTRIES}"    \"command\" : \"clang++ -std=c++17 $DRIVER -o $2\",\n"
+ENTRIES=${ENTRIES}"    \"command\" : \"clang++ -std=c++17 $DRIVER -o $EXECFILE\",\n"
 ENTRIES=${ENTRIES}"    \"file\" : \"$WD/$DRIVER\"\n  },\n"
 
-for implem in $IMPLEMS
+for implem in "$@"
 do
   ENTRIES=${ENTRIES}"  {\n   \"directory\" : \"$WD\",\n"
-  ENTRIES=${ENTRIES}"    \"command\" : \"clang++ -std=c++17 $implem -o $2\",\n"
-  ENTRIES=${ENTRIES}"    \"file\" : \"$WD/$IMPLEMS\"\n  },\n"
+  ENTRIES=${ENTRIES}"    \"command\" : \"clang++ -std=c++17 $implem -o $EXECFILE\",\n"
+  ENTRIES=${ENTRIES}"    \"file\" : \"$WD/$implem\"\n  },\n"
 done
 
-for header in $HEADERS
-do
-  ENTRIES=${ENTRIES}"  {\n   \"directory\" : \"$WD\",\n"
-  ENTRIES=${ENTRIES}"    \"command\" : \"clang++ -std=c++17 $header -o $2\",\n"
-  ENTRIES=${ENTRIES}"    \"file\" : \"$WD/$HEADERS\"\n  },\n"
-done
 ENTRIES=${ENTRIES}"]"
+
 echo -e $ENTRIES > $OUTPUT_PATH/compile_commands.json
