@@ -16,6 +16,12 @@ jobs:
     - name: make test
       run: make test
       working-directory: test
+    - name: make stylecheck
+      run: make stylecheck
+      working-directory: test
+    - name: make formatcheck
+      run: make formatcheck
+      working-directory: test
     - name: make clean
       run: make clean
       working-directory: test
