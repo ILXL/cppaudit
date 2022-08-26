@@ -90,7 +90,7 @@ else
 endif
 endif
 	@echo -e "========================\nRunning style checker\n========================\n"
-	@cd $(REL_ROOT_PATH)/ && clang-tidy -p=$(OUTPUT_FROM_ROOT) --quiet -header-filter=.* -checks="*,-misc-unused-parameters,-modernize-use-trailing-return-type,-google-build-using-namespace,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers" -config="{CheckOptions: [ {key: readability-identifier-naming.VariableCase, value: lower_case}, { key: readability-identifier-naming.FunctionCase, value: CamelCase }, {key: readability-identifier-naming.GlobalConstantCase,  value: UPPER_CASE}, {key: readability-identifier-naming.GlobalConstantPrefix, value: k} ]}" -export-fixes=$(OUTPUT_FROM_ROOT)/style.yaml $(IMPLEMS) $(DRIVER)
+	@cd $(REL_ROOT_PATH)/ && clang-tidy -p=$(OUTPUT_FROM_ROOT) -quiet -header-filter=.* -export-fixes=$(OUTPUT_FROM_ROOT)/style.yaml $(IMPLEMS) $(DRIVER)
 	@echo -e "========================\nStyle checker complete\n========================\n"
 
 formatcheck:
